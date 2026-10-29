@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { FolderPlusIcon, Loader2Icon, PlusIcon, XIcon } from "lucide-react";
+import { FolderPlusIcon, PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { createCategory } from "@/actions/categories/category-actions";
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import type { ActionFailure } from "@/types/api";
 
 const EMPTY_VALUES: CreateCategoryInput = { name: "", subcategories: [] };
@@ -70,7 +71,7 @@ export function CreateCategoryDialog() {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="lg">
-          <FolderPlusIcon />
+          <FolderPlusIcon data-icon="inline-start" />
           Nueva categoría
         </Button>
       </DialogTrigger>
@@ -148,7 +149,7 @@ export function CreateCategoryDialog() {
             </ul>
             {subcategoriesError?.message && <FieldError>{subcategoriesError.message}</FieldError>}
             <Button type="button" variant="outline" className="self-start" disabled={!canAddMore} onClick={addSubcategory}>
-              <PlusIcon />
+              <PlusIcon data-icon="inline-start" />
               Agregar subcategoría
             </Button>
           </FieldSet>
@@ -160,7 +161,7 @@ export function CreateCategoryDialog() {
             </Button>
           </DialogClose>
           <Button type="submit" form="create-category-form" disabled={isSubmitting}>
-            {isSubmitting && <Loader2Icon className="animate-spin" />}
+            {isSubmitting && <Spinner data-icon="inline-start" />}
             {isSubmitting ? "Creando…" : "Crear categoría"}
           </Button>
         </DialogFooter>

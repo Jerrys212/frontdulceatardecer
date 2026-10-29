@@ -18,7 +18,7 @@ export function FormErrorAlert({ failure }: FormErrorAlertProps) {
       <AlertTitle>{failure.message}</AlertTitle>
       {details.length > 0 && (
         <AlertDescription>
-          <ul className="list-disc space-y-0.5 pl-4">
+          <ul className="flex list-disc flex-col gap-0.5 pl-4">
             {details.map((detail) => (
               <li key={detail}>{detail}</li>
             ))}

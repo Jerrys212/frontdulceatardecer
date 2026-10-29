@@ -57,7 +57,7 @@ export function PaginationBar({ page, pageSize, itemCount, totalCount, totalPage
       {totalPages > 1 && (
         <div className="flex items-center gap-2">
           <PageButton {...navigation} target={page - 1} enabled={page > 1}>
-            <ChevronLeftIcon />
+            <ChevronLeftIcon data-icon="inline-start" />
             Anterior
           </PageButton>
           <span aria-current="page">
@@ -65,7 +65,7 @@ export function PaginationBar({ page, pageSize, itemCount, totalCount, totalPage
           </span>
           <PageButton {...navigation} target={page + 1} enabled={page < totalPages}>
             Siguiente
-            <ChevronRightIcon />
+            <ChevronRightIcon data-icon="inline-end" />
           </PageButton>
         </div>
       )}

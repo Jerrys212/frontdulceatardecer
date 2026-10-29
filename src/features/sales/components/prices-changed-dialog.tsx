@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRightIcon, Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { ArrowRightIcon, TriangleAlertIcon } from "lucide-react";
 
 import {
   AlertDialog,
@@ -11,6 +11,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { formatCurrency } from "@/lib/formats";
 
 type PricesChangedDialogProps = {
@@ -59,8 +60,8 @@ export function PricesChangedDialog({
           <Button variant="outline" disabled={isSubmitting} onClick={onReview}>
             Revisar pedido
           </Button>
-          <Button disabled={isSubmitting} onClick={onConfirm}>
-            {isSubmitting && <Loader2Icon className="animate-spin" />}
+          <Button onClick={onConfirm} disabled={isSubmitting}>
+            {isSubmitting && <Spinner data-icon="inline-start" />}
             {confirmLabel}
           </Button>
         </AlertDialogFooter>

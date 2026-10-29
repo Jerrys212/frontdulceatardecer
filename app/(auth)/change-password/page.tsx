@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ShieldAlertIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/data/auth/get-current-user";
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { LogoutButton } from "@/features/auth/components/logout-button";
@@ -22,8 +23,8 @@ async function ChangePasswordContent() {
   return (
     <>
       {user.mustChangePassword && (
-        <Alert className="border-warning/50 text-foreground">
-          <ShieldAlertIcon className="text-warning" />
+        <Alert variant="warning">
+          <ShieldAlertIcon />
           <AlertTitle>Necesitas una contraseña nueva</AlertTitle>
           <AlertDescription>
             Estás usando una contraseña temporal. Cámbiala para poder usar el sistema.
@@ -47,7 +48,7 @@ async function ChangePasswordContent() {
         ) : (
           <Button asChild variant="ghost" className="text-muted-foreground">
             <Link href={homePath}>
-              <ArrowLeftIcon />
+              <ArrowLeftIcon data-icon="inline-start" />
               Volver al inicio
             </Link>
           </Button>
@@ -58,7 +59,7 @@ async function ChangePasswordContent() {
 }
 
 function ChangePasswordSkeleton() {
-  return <div className="h-96 animate-pulse rounded-md bg-card" aria-busy="true" aria-label="Cargando" />;
+  return <Skeleton className="h-96" aria-busy="true" aria-label="Cargando" />;
 }
 
 export default function ChangePasswordPage() {

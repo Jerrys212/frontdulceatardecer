@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDownIcon } from "lucide-react";
+import { cn } from "cn";
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
@@ -20,8 +21,9 @@ import {
 import type { Role } from "@/data/auth/types";
 import { getNavigation, type NavItem } from "@/lib/constants";
 
-const MENU_BUTTON_CLASS =
-  "h-10 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground-active data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground-active";
+const MENU_ITEM_CLASS =
+  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground-active data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground-active";
+const MENU_BUTTON_CLASS = cn("h-10", MENU_ITEM_CLASS);
 
 function isActivePath(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -51,7 +53,7 @@ function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: str
                     <SidebarMenuSubButton
                       asChild
                       isActive={active}
-                      className="h-9 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground-active data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground-active"
+                      className={cn("h-9", MENU_ITEM_CLASS)}
                     >
                       <Link href={child.href} aria-current={active ? "page" : undefined} onClick={onNavigate}>
                         <span>{child.title}</span>
@@ -92,7 +94,7 @@ export function AppSidebarNav({ role }: { role: Role }) {
       {getNavigation(role).map((group, index) => (
         <SidebarGroup key={group.title ?? index}>
           {group.title && (
-            <SidebarGroupLabel className="text-[0.7rem] font-semibold tracking-wider text-sidebar-title uppercase">
+            <SidebarGroupLabel className="text-xs font-semibold tracking-wider text-sidebar-title uppercase">
               {group.title}
             </SidebarGroupLabel>
           )}

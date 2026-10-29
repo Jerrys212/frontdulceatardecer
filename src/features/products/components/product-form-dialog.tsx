@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { createProduct, updateProduct } from "@/actions/products/product-actions";
 import { ProductFormSchema, type ProductFormInput, type ProductFormOutput } from "@/actions/products/schemas";
 import { FormErrorAlert } from "@/components/forms/form-error-alert";
+import { PriceInput } from "@/components/forms/price-input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,8 +22,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import type { Category } from "@/data/categories/types";
 import type { Product } from "@/data/products/types";
@@ -33,6 +34,20 @@ type ProductFormDialogProps = {
   categories: Category[];
   onClose: () => void;
 };
+
+export function CreateProductButton({ categories }: { categories: Category[] }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button size="lg" onClick={() => setOpen(true)}>
+        <PlusIcon data-icon="inline-start" />
+        Nuevo producto
+      </Button>
+      {open && <ProductFormDialog categories={categories} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
 
 export function ProductFormDialog({ product, categories, onClose }: ProductFormDialogProps) {
   const isEditing = product !== undefined;
@@ -103,12 +118,14 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
                         <SelectValue placeholder="Selecciona" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id} disabled={!category.isActive}>
-                            {category.name}
-                            {!category.isActive && " (inactiva)"}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id} disabled={!category.isActive}>
+                              {category.name}
+                              {!category.isActive && " (inactiva)"}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                     <FieldError errors={[fieldState.error]} />
@@ -126,12 +143,14 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
                         <SelectValue placeholder={categoryId ? "Selecciona" : "Elige una categoría"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {subcategories.map((subcategory) => (
-                          <SelectItem key={subcategory.id} value={subcategory.id} disabled={!subcategory.isActive}>
-                            {subcategory.name}
-                            {!subcategory.isActive && " (inactiva)"}
-                          </SelectItem>
-                        ))}
+                        <SelectGroup>
+                          {subcategories.map((subcategory) => (
+                            <SelectItem key={subcategory.id} value={subcategory.id} disabled={!subcategory.isActive}>
+                              {subcategory.name}
+                              {!subcategory.isActive && " (inactiva)"}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       </SelectContent>
                     </Select>
                     {categoryId && subcategories.length === 0 && (
@@ -191,22 +210,12 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor="product-price">Precio</FieldLabel>
-                  <InputGroup className="h-9 sm:max-w-48">
-                    <InputGroupAddon>
-                      <InputGroupText>$</InputGroupText>
-                    </InputGroupAddon>
-                    <InputGroupInput
-                      {...field}
-                      id="product-price"
-                      inputMode="decimal"
-                      placeholder="0.00"
-                      autoComplete="off"
-                      aria-invalid={fieldState.invalid}
-                    />
-                    <InputGroupAddon align="inline-end">
-                      <InputGroupText>MXN</InputGroupText>
-                    </InputGroupAddon>
-                  </InputGroup>
+                  <PriceInput
+                    {...field}
+                    id="product-price"
+                    groupClassName="h-9 sm:max-w-48"
+                    aria-invalid={fieldState.invalid}
+                  />
                   {!fieldState.invalid && <FieldDescription>IVA incluido.</FieldDescription>}
                   <FieldError errors={[fieldState.error]} />
                 </Field>
@@ -220,8 +229,8 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
               Cancelar
             </Button>
           </DialogClose>
-          <Button type="submit" form="product-form" disabled={isSubmitting || (isEditing && !form.formState.isDirty)}>
-            {isSubmitting && <Loader2Icon className="animate-spin" />}
+          <Button type="submit" form="product-form" disabled={isSubmitting || isEditing && !form.formState.isDirty}>
+            {isSubmitting && <Spinner data-icon="inline-start" />}
             {isSubmitting ? "Guardando…" : isEditing ? "Guardar cambios" : "Crear producto"}
           </Button>
         </DialogFooter>

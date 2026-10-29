@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -39,27 +40,31 @@ export function UserMenu({ user }: UserMenuProps) {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 shadow-dropdown">
-        <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="truncate text-sm font-semibold text-foreground">{user.fullName}</span>
-          <span className="truncate text-xs font-normal text-muted-foreground">
-            @{user.username} · {ROLE_LABELS[user.role]}
-          </span>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex flex-col gap-0.5">
+            <span className="truncate text-sm font-semibold text-foreground">{user.fullName}</span>
+            <span className="truncate text-xs font-normal text-muted-foreground">
+              @{user.username} · {ROLE_LABELS[user.role]}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href={CHANGE_PASSWORD_PATH}>
-            <KeyRoundIcon />
-            Cambiar contraseña
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          variant="destructive"
-          disabled={isPending}
-          onSelect={() => startTransition(() => logout())}
-        >
-          <LogOutIcon />
-          Cerrar sesión
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuItem asChild>
+            <Link href={CHANGE_PASSWORD_PATH}>
+              <KeyRoundIcon />
+              Cambiar contraseña
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            disabled={isPending}
+            onSelect={() => startTransition(() => logout())}
+          >
+            <LogOutIcon />
+            Cerrar sesión
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

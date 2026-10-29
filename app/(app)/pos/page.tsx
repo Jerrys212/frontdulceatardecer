@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { TriangleAlertIcon } from "lucide-react";
 
+import { EmptyState } from "@/components/empty-state";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiError } from "@/data/api-error";
-import { requireRole } from "@/data/auth/require-admin";
+import { requireRole } from "@/data/auth/require-role";
 import { getActiveCategories, getActiveExtras, getAvailableProducts } from "@/data/pos/get-pos-catalog";
 import { getSale } from "@/data/sales/get-sales";
 import { saleNumber, type Sale } from "@/data/sales/types";
@@ -18,6 +19,7 @@ import { ProductGrid } from "@/features/sales/components/product-grid";
 import type { EditSession } from "@/features/sales/store/cart-store";
 import { toCents } from "@/lib/money";
 import { applyCatalogPrices, type CartLine } from "@/lib/sales/cart";
+import { firstValue } from "@/lib/search-params";
 import { EntityIdSchema } from "@/lib/validations/ids";
 
 export const metadata: Metadata = {
@@ -25,10 +27,6 @@ export const metadata: Metadata = {
 };
 
 type SearchParams = PageProps<"/pos">["searchParams"];
-
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 function toCartLines(sale: Sale): CartLine[] {
   return sale.items.map((item, index) => {
@@ -55,13 +53,7 @@ function toCartLines(sale: Sale): CartLine[] {
 }
 
 async function loadEditSession(saleId: string): Promise<EditSession | Sale> {
-  let sale: Sale;
-  try {
-    sale = await getSale(saleId);
-  } catch (error) {
-    if (error instanceof ApiError && error.statusCode === 404) notFound();
-    throw error;
-  }
+  const sale = await getSale(saleId);
   if (sale.status !== "Preparing") return sale;
 
   const [products, extras] = await Promise.all([getAvailableProducts(), getActiveExtras()]);
@@ -73,12 +65,8 @@ async function loadEditSession(saleId: string): Promise<EditSession | Sale> {
   };
 }
 
-function EmptyCatalog({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="rounded-md border border-border-translucent bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-      {children}
-    </p>
-  );
+function CatalogEmpty({ description }: { description: string }) {
+  return <EmptyState description={description} className="rounded-md border border-border-translucent bg-card" />;
 }
 
 async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
@@ -88,7 +76,7 @@ async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
   const categories = await getActiveCategories();
 
   if (categories.length === 0) {
-    return <EmptyCatalog>No hay categorías activas. Un administrador debe crearlas en Catálogo.</EmptyCatalog>;
+    return <CatalogEmpty description="No hay categorías activas. Un administrador debe crearlas en Catálogo." />;
   }
 
   const category = categories.find((item) => item.id === firstValue(raw.category)) ?? categories[0];
@@ -113,13 +101,15 @@ async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
         {products.length > 0 ? (
           <ProductGrid products={products} showSubcategory={Boolean(search)} />
         ) : (
-          <EmptyCatalog>
-            {search
-              ? "No encontramos productos con ese nombre."
-              : subcategory
-                ? "Esta subcategoría no tiene productos disponibles."
-                : "Esta categoría no tiene subcategorías disponibles."}
-          </EmptyCatalog>
+          <CatalogEmpty
+            description={
+              search
+                ? "No encontramos productos con ese nombre."
+                : subcategory
+                  ? "Esta subcategoría no tiene productos disponibles."
+                  : "Esta categoría no tiene subcategorías disponibles."
+            }
+          />
         )}
       </section>
     </>
@@ -135,13 +125,16 @@ async function PosEditSession({ searchParams }: { searchParams: SearchParams }) 
   if ("saleNumber" in result) return <EditSessionLoader session={result} />;
 
   return (
-    <div className="flex flex-col items-start gap-2 rounded-md border border-warning/50 bg-warning/10 px-4 py-3 text-sm">
-      <p className="font-medium">La venta {saleNumber(result.id)} ya no se puede modificar.</p>
-      <p className="text-muted-foreground">Solo se pueden modificar ventas en preparación.</p>
-      <Button asChild variant="outline" size="sm">
-        <Link href={`/sales/${result.id}`}>Ver la venta</Link>
-      </Button>
-    </div>
+    <Alert variant="warning">
+      <TriangleAlertIcon />
+      <AlertTitle>La venta {saleNumber(result.id)} ya no se puede modificar.</AlertTitle>
+      <AlertDescription>Solo se pueden modificar ventas en preparación.</AlertDescription>
+      <AlertAction>
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/sales/${result.id}`}>Ver la venta</Link>
+        </Button>
+      </AlertAction>
+    </Alert>
   );
 }
 

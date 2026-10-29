@@ -3,16 +3,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "lucide-react";
 
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 import { PaginationBar } from "@/components/pagination-bar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireAdmin } from "@/data/auth/require-admin";
+import { requireAdmin } from "@/data/auth/require-role";
 import { getAllCategories } from "@/data/categories/get-all-categories";
 import { getProductsPage } from "@/data/products/get-products-page";
 import { ProductsQuerySchema, type ProductsQuery } from "@/data/products/types";
-import { CreateProductButton } from "@/features/products/components/create-product-button";
+import { CreateProductButton } from "@/features/products/components/product-form-dialog";
 import { ProductsFilters } from "@/features/products/components/products-filters";
 import { ProductsTable } from "@/features/products/components/products-table";
+import { firstValue, withQuery } from "@/lib/search-params";
 
 export const metadata: Metadata = {
   title: "Productos",
@@ -20,19 +23,8 @@ export const metadata: Metadata = {
 
 type SearchParams = PageProps<"/catalog/products">["searchParams"];
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 function buildProductsHref(query: ProductsQuery, page: number) {
-  const params = new URLSearchParams();
-  if (query.search) params.set("search", query.search);
-  if (query.category) params.set("category", query.category);
-  if (query.subcategory) params.set("subcategory", query.subcategory);
-  if (query.status) params.set("status", query.status);
-  if (page > 1) params.set("page", String(page));
-  const queryString = params.toString();
-  return queryString ? `/catalog/products?${queryString}` : "/catalog/products";
+  return withQuery("/catalog/products", { ...query, page: page > 1 ? page : undefined });
 }
 
 async function CreateProductAction() {
@@ -61,15 +53,16 @@ async function ProductsSection({ searchParams }: { searchParams: SearchParams })
         {result.items.length > 0 ? (
           <ProductsTable products={result.items} categories={categories} />
         ) : (
-          <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-            <p className="font-medium">{hasFilters ? "No encontramos productos" : "Aún no hay productos"}</p>
-            <p className="text-sm text-muted-foreground">
-              {hasFilters
+          <EmptyState
+            title={hasFilters ? "No encontramos productos" : "Aún no hay productos"}
+            description={
+              hasFilters
                 ? "Prueba con otra búsqueda o quita los filtros."
                 : categories.length === 0
                   ? "Primero crea una categoría con sus subcategorías."
-                  : "Crea el primero con «Nuevo producto»."}
-            </p>
+                  : "Crea el primero con «Nuevo producto»."
+            }
+          >
             {hasFilters && (
               <Button asChild variant="outline" size="sm">
                 <Link href="/catalog/products">Quitar filtros</Link>
@@ -80,7 +73,7 @@ async function ProductsSection({ searchParams }: { searchParams: SearchParams })
                 <Link href="/catalog/categories">Ir a Categorías</Link>
               </Button>
             )}
-          </div>
+          </EmptyState>
         )}
       </section>
       {result.totalCount > 0 && (
@@ -113,24 +106,21 @@ function ProductsSkeleton() {
 export default function ProductsPage({ searchParams }: PageProps<"/catalog/products">) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">Productos</h1>
-          <p className="text-sm text-muted-foreground">
-            El punto de venta solo muestra productos activos de categorías y subcategorías activas.
-          </p>
-        </div>
+      <PageHeader
+        title="Productos"
+        description="El punto de venta solo muestra productos activos de categorías y subcategorías activas."
+      >
         <Suspense
           fallback={
             <Button size="lg" disabled>
-              <PlusIcon />
+              <PlusIcon data-icon="inline-start" />
               Nuevo producto
             </Button>
           }
         >
           <CreateProductAction />
         </Suspense>
-      </header>
+      </PageHeader>
       <Suspense fallback={<ProductsSkeleton />}>
         <div className="flex flex-col gap-4">
           <ProductsSection searchParams={searchParams} />

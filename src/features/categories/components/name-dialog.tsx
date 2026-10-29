@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { NameSchema, type NameInput } from "@/actions/categories/schemas";
@@ -20,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import type { ActionFailure, ActionResult } from "@/types/api";
 
 type NameDialogProps = {
@@ -101,7 +101,7 @@ export function NameDialog({
             </Button>
           </DialogClose>
           <Button type="submit" form="name-dialog-form" disabled={isSubmitting || !form.formState.isDirty}>
-            {isSubmitting && <Loader2Icon className="animate-spin" />}
+            {isSubmitting && <Spinner data-icon="inline-start" />}
             {isSubmitting ? pendingLabel : submitLabel}
           </Button>
         </DialogFooter>

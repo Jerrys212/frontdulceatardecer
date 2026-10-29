@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "lucide-react";
 
+import { EmptyState } from "@/components/empty-state";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireRole } from "@/data/auth/require-admin";
+import { requireRole } from "@/data/auth/require-role";
 import { getPendingSales } from "@/data/sales/get-sales";
 import { AutoRefresh } from "@/features/sales/components/auto-refresh";
 import { PendingSaleCard } from "@/features/sales/components/pending-sale-card";
@@ -26,24 +28,27 @@ async function PendingSales() {
       <header className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="flex items-center gap-3 text-2xl font-semibold">
           Pedidos en preparación
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-warning px-2 text-sm font-semibold text-dark">
+          <Badge variant="warning" className="h-7 min-w-7">
             {sales.length}
-          </span>
+          </Badge>
         </h1>
         <AutoRefresh intervalMs={REFRESH_INTERVAL_MS} />
       </header>
       {sales.length === 0 ? (
-        <section className="flex flex-col items-center gap-3 rounded-md border border-border-translucent bg-card px-4 py-16 text-center">
-          <p className="font-medium">No hay pedidos en preparación</p>
-          <p className="text-sm text-muted-foreground">Los pedidos registrados aparecerán aquí hasta que se cobren o cancelen.</p>
-          {canSell && (
-            <Button asChild>
-              <Link href="/pos">
-                <PlusIcon />
-                Nueva venta
-              </Link>
-            </Button>
-          )}
+        <section aria-label="Pedidos" className="rounded-md border border-border-translucent bg-card">
+          <EmptyState
+            title="No hay pedidos en preparación"
+            description="Los pedidos registrados aparecerán aquí hasta que se cobren o cancelen."
+          >
+            {canSell && (
+              <Button asChild>
+                <Link href="/pos">
+                  <PlusIcon data-icon="inline-start" />
+                  Nueva venta
+                </Link>
+              </Button>
+            )}
+          </EmptyState>
         </section>
       ) : (
         <section aria-label="Pedidos" className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -1,5 +1,7 @@
 const VAT_FACTOR = 1.16;
 
+export const MONEY_PATTERN = /^\d+(\.\d{1,2})?$/;
+
 export function toCents(amount: number) {
   return Math.round(amount * 100);
 }

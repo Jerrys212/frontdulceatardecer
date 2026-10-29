@@ -17,7 +17,7 @@ export function LogoutButton() {
       disabled={isPending}
       onClick={() => startTransition(() => logout())}
     >
-      <LogOutIcon />
+      <LogOutIcon data-icon="inline-start" />
       {isPending ? "Cerrando sesión…" : "Cerrar sesión"}
     </Button>
   );

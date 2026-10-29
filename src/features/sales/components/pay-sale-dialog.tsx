@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowLeftRightIcon, BanknoteIcon, CreditCardIcon, Loader2Icon, type LucideIcon } from "lucide-react";
+import { ArrowLeftRightIcon, BanknoteIcon, CreditCardIcon, type LucideIcon } from "lucide-react";
 import { cn } from "cn";
 import { toast } from "sonner";
 
@@ -16,10 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
-import { PAYMENT_METHOD_LABELS, saleNumber, type PaymentMethod, type Sale } from "@/data/sales/types";
+import { Spinner } from "@/components/ui/spinner";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { PAYMENT_METHOD_LABELS, PaymentMethodSchema, saleNumber, type PaymentMethod, type Sale } from "@/data/sales/types";
 import { formatCurrency } from "@/lib/formats";
-import { fromCents, toCents } from "@/lib/money";
+import { MONEY_PATTERN, fromCents, toCents } from "@/lib/money";
+import { toastFailure } from "@/lib/toast-failure";
 
 const METHODS: { value: PaymentMethod; Icon: LucideIcon }[] = [
   { value: "Cash", Icon: BanknoteIcon },
@@ -40,7 +44,7 @@ export function PaySaleDialog({ sale, onClose }: PaySaleDialogProps) {
   const [isPending, startTransition] = useTransition();
 
   const totalCents = toCents(sale.total);
-  const receivedValid = /^\d+(\.\d{1,2})?$/.test(received.trim());
+  const receivedValid = MONEY_PATTERN.test(received.trim());
   const receivedCents = receivedValid ? toCents(Number(received)) : 0;
   const changeCents = receivedCents - totalCents;
   const quickBills = BILLS.filter((bill) => bill * 100 > totalCents).slice(0, 3);
@@ -50,7 +54,7 @@ export function PaySaleDialog({ sale, onClose }: PaySaleDialogProps) {
     startTransition(async () => {
       const result = await paySale(sale.id, method);
       if (!result.success) {
-        toast.error(result.message, { description: result.errors.filter((error) => error !== result.message).join(" ") });
+        toastFailure(result);
         return;
       }
       toast.success(`${result.message} ${saleNumber(sale.id)}`, {
@@ -74,32 +78,30 @@ export function PaySaleDialog({ sale, onClose }: PaySaleDialogProps) {
         </DialogHeader>
         <p className="text-center text-4xl font-semibold tabular-nums">{formatCurrency(sale.total)}</p>
 
-        <div role="radiogroup" aria-label="Método de pago" className="grid grid-cols-3 gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          aria-label="Método de pago"
+          className="grid w-full grid-cols-3"
+          value={method}
+          onValueChange={(value) => {
+            const parsed = PaymentMethodSchema.safeParse(value);
+            if (parsed.success) setMethod(parsed.data);
+          }}
+        >
           {METHODS.map(({ value, Icon }) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={method === value}
-              onClick={() => setMethod(value)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 rounded-md border px-2 py-3 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                method === value
-                  ? "border-success bg-success/10 text-success"
-                  : "border-border bg-card text-foreground hover:bg-muted",
-              )}
-            >
-              <Icon className="size-5" aria-hidden="true" />
+            <ToggleGroupItem key={value} value={value} className="h-auto flex-col gap-1.5 py-3">
+              <Icon />
               {PAYMENT_METHOD_LABELS[value]}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         {method === "Cash" && (
-          <div className="flex flex-col gap-2">
-            <label htmlFor="cash-received" className="text-sm font-medium">
+          <Field>
+            <FieldLabel htmlFor="cash-received">
               Monto recibido <span className="font-normal text-muted-foreground">(opcional, para calcular el cambio)</span>
-            </label>
+            </FieldLabel>
             <InputGroup className="h-10">
               <InputGroupAddon>
                 <InputGroupText>$</InputGroupText>
@@ -152,7 +154,7 @@ export function PaySaleDialog({ sale, onClose }: PaySaleDialogProps) {
                 )}
               </div>
             )}
-          </div>
+          </Field>
         )}
 
         <DialogFooter>
@@ -161,8 +163,8 @@ export function PaySaleDialog({ sale, onClose }: PaySaleDialogProps) {
               Cancelar
             </Button>
           </DialogClose>
-          <Button disabled={!canConfirm || isPending} onClick={confirm}>
-            {isPending && <Loader2Icon className="animate-spin" />}
+          <Button onClick={confirm} disabled={isPending || !canConfirm}>
+            {isPending && <Spinner data-icon="inline-start" />}
             {isPending ? "Cobrando…" : "Confirmar cobro"}
           </Button>
         </DialogFooter>

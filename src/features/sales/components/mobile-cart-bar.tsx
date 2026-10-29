@@ -25,7 +25,7 @@ export function MobileCartBar({ extras }: { extras: ActiveExtra[] }) {
         <SheetTrigger asChild>
           <Button size="lg" className="h-11 w-full justify-between text-base">
             <span className="flex items-center gap-2">
-              <ShoppingBagIcon />
+              <ShoppingBagIcon data-icon="inline-start" />
               Ver pedido {units > 0 && `· ${units} ${units === 1 ? "producto" : "productos"}`}
             </span>
             <span className="tabular-nums">{formatCurrency(total)}</span>

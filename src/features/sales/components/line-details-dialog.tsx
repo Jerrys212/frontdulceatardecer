@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { EmptyState } from "@/components/empty-state";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,9 +67,7 @@ export function LineDetailsDialog({ line, extras, onClose }: LineDetailsDialogPr
         </DialogHeader>
         <div className="-mx-6 flex flex-1 flex-col gap-4 overflow-y-auto px-6">
           {options.length === 0 ? (
-            <p className="rounded-md bg-muted px-3 py-4 text-center text-sm text-muted-foreground">
-              No hay extras disponibles.
-            </p>
+            <EmptyState description="No hay extras disponibles." className="rounded-md bg-muted p-4" />
           ) : (
             <ul className="flex flex-col gap-2">
               {options.map((option) => (

@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { LoginSchema, type LoginInput } from "@/actions/auth/schemas";
-import { toActionFailure, validationFailure } from "@/actions/to-action-failure";
+import { toActionFailure, validationFailure } from "@/actions/action-result";
 import { LoginResponseSchema } from "@/data/auth/types";
 import { requestApi } from "@/data/request-api";
 import { CHANGE_PASSWORD_PATH, getHomePath } from "@/lib/auth/routes";

@@ -16,6 +16,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentUser } from "@/data/auth/get-current-user";
 import { UserMenu } from "@/features/auth/components/user-menu";
@@ -29,7 +30,7 @@ async function HeaderUser() {
       {user.role !== "Kitchen" && (
         <Button asChild size="sm">
           <Link href="/pos">
-            <PlusIcon />
+            <PlusIcon data-icon="inline-start" />
             <span className="hidden sm:inline">Nueva venta</span>
             <span className="sr-only sm:hidden">Nueva venta</span>
           </Link>
@@ -76,7 +77,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <SidebarTrigger className="text-muted-foreground" aria-label="Mostrar u ocultar menú" />
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Suspense fallback={<div className="size-9 animate-pulse rounded-full bg-muted" />}>
+              <Suspense fallback={<Skeleton className="size-9 rounded-full" />}>
                 <HeaderUser />
               </Suspense>
             </div>
