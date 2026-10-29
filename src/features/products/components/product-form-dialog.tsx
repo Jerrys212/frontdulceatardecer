@@ -80,6 +80,68 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
         <form id="product-form" onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
           <FormErrorAlert failure={failure} />
           <FieldGroup className="gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Controller
+                control={form.control}
+                name="categoryId"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="product-category">Categoría</FieldLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        form.setValue("subcategoryId", "", { shouldDirty: true });
+                      }}
+                    >
+                      <SelectTrigger
+                        id="product-category"
+                        autoFocus={!isEditing}
+                        className="h-9 w-full"
+                        aria-invalid={fieldState.invalid}
+                      >
+                        <SelectValue placeholder="Selecciona" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id} disabled={!category.isActive}>
+                            {category.name}
+                            {!category.isActive && " (inactiva)"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+              <Controller
+                control={form.control}
+                name="subcategoryId"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="product-subcategory">Subcategoría</FieldLabel>
+                    <Select value={field.value} onValueChange={field.onChange} disabled={subcategories.length === 0}>
+                      <SelectTrigger id="product-subcategory" className="h-9 w-full" aria-invalid={fieldState.invalid}>
+                        <SelectValue placeholder={categoryId ? "Selecciona" : "Elige una categoría"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subcategories.map((subcategory) => (
+                          <SelectItem key={subcategory.id} value={subcategory.id} disabled={!subcategory.isActive}>
+                            {subcategory.name}
+                            {!subcategory.isActive && " (inactiva)"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {categoryId && subcategories.length === 0 && (
+                      <FieldDescription>Esta categoría no tiene subcategorías. Agrégalas en Categorías.</FieldDescription>
+                    )}
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+            </div>
             <Controller
               control={form.control}
               name="name"
@@ -93,7 +155,7 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
                     placeholder="ej. Crepa de Nutella y plátano"
                     autoComplete="off"
                     maxLength={100}
-                    autoFocus
+                    autoFocus={isEditing}
                     aria-invalid={fieldState.invalid}
                   />
                   <FieldError errors={[fieldState.error]} />
@@ -150,63 +212,6 @@ export function ProductFormDialog({ product, categories, onClose }: ProductFormD
                 </Field>
               )}
             />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Controller
-                control={form.control}
-                name="categoryId"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="product-category">Categoría</FieldLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        form.setValue("subcategoryId", "", { shouldDirty: true });
-                      }}
-                    >
-                      <SelectTrigger id="product-category" className="h-9 w-full" aria-invalid={fieldState.invalid}>
-                        <SelectValue placeholder="Selecciona" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id} disabled={!category.isActive}>
-                            {category.name}
-                            {!category.isActive && " (inactiva)"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FieldError errors={[fieldState.error]} />
-                  </Field>
-                )}
-              />
-              <Controller
-                control={form.control}
-                name="subcategoryId"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="product-subcategory">Subcategoría</FieldLabel>
-                    <Select value={field.value} onValueChange={field.onChange} disabled={subcategories.length === 0}>
-                      <SelectTrigger id="product-subcategory" className="h-9 w-full" aria-invalid={fieldState.invalid}>
-                        <SelectValue placeholder={categoryId ? "Selecciona" : "Elige una categoría"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {subcategories.map((subcategory) => (
-                          <SelectItem key={subcategory.id} value={subcategory.id} disabled={!subcategory.isActive}>
-                            {subcategory.name}
-                            {!subcategory.isActive && " (inactiva)"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {categoryId && subcategories.length === 0 && (
-                      <FieldDescription>Esta categoría no tiene subcategorías. Agrégalas en Categorías.</FieldDescription>
-                    )}
-                    <FieldError errors={[fieldState.error]} />
-                  </Field>
-                )}
-              />
-            </div>
           </FieldGroup>
         </form>
         <DialogFooter>

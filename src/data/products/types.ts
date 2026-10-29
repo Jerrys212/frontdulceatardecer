@@ -24,5 +24,6 @@ export const ProductsQuerySchema = z.object({
   category: EntityIdSchema.optional().catch(undefined),
   subcategory: EntityIdSchema.optional().catch(undefined),
   status: z.enum(["active", "inactive"]).optional().catch(undefined),
+  page: z.coerce.number().int().min(1).optional().catch(undefined),
 });
 export type ProductsQuery = z.infer<typeof ProductsQuerySchema>;
