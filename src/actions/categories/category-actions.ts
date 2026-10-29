@@ -1,29 +1,22 @@
 "use server";
 
-import { refresh } from "next/cache";
-
+import { activationPath, runMutation, validationFailure } from "@/actions/action-result";
 import { CreateCategorySchema, NameSchema, type CreateCategoryInput, type NameInput } from "@/actions/categories/schemas";
-import { toActionFailure, validationFailure } from "@/actions/to-action-failure";
-import { EmptyDataSchema } from "@/data/auth/types";
 import { CategorySchema, SubcategorySchema } from "@/data/categories/types";
 import { apiFetch } from "@/data/client";
 import { EntityIdSchema } from "@/lib/validations/ids";
-import type { ActionResult } from "@/types/api";
+import { EmptyDataSchema, type ActionResult } from "@/types/api";
 
 export async function createCategory(input: CreateCategoryInput): Promise<ActionResult> {
   const parsed = CreateCategorySchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const { message } = await apiFetch("/categories", CategorySchema, {
+  return runMutation("createCategory", "Categoría creada", () =>
+    apiFetch("/categories", CategorySchema, {
       method: "POST",
       body: { name: parsed.data.name, subcategories: parsed.data.subcategories.map(({ name }) => name) },
-    });
-    refresh();
-    return { success: true, message: message ?? "Categoría creada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "createCategory");
-  }
+    }),
+  );
 }
 
 export async function renameCategory(categoryId: string, input: NameInput): Promise<ActionResult> {
@@ -32,28 +25,18 @@ export async function renameCategory(categoryId: string, input: NameInput): Prom
   const parsed = NameSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const { message } = await apiFetch(`/categories/${id.data}`, CategorySchema, { method: "PUT", body: parsed.data });
-    refresh();
-    return { success: true, message: message ?? "Categoría actualizada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "renameCategory");
-  }
+  return runMutation("renameCategory", "Categoría actualizada", () =>
+    apiFetch(`/categories/${id.data}`, CategorySchema, { method: "PUT", body: parsed.data }),
+  );
 }
 
 export async function setCategoryActive(categoryId: string, active: boolean): Promise<ActionResult> {
   const id = EntityIdSchema.safeParse(categoryId);
   if (!id.success) return validationFailure(id.error);
 
-  try {
-    const { message } = await apiFetch(`/categories/${id.data}/${active ? "activate" : "deactivate"}`, EmptyDataSchema, {
-      method: "POST",
-    });
-    refresh();
-    return { success: true, message: message ?? (active ? "Categoría activada" : "Categoría desactivada"), data: null };
-  } catch (error) {
-    return toActionFailure(error, "setCategoryActive");
-  }
+  return runMutation("setCategoryActive", active ? "Categoría activada" : "Categoría desactivada", () =>
+    apiFetch(activationPath(`/categories/${id.data}`, active), EmptyDataSchema, { method: "POST" }),
+  );
 }
 
 export async function createSubcategory(categoryId: string, input: NameInput): Promise<ActionResult> {
@@ -62,16 +45,9 @@ export async function createSubcategory(categoryId: string, input: NameInput): P
   const parsed = NameSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const { message } = await apiFetch(`/categories/${id.data}/subcategories`, SubcategorySchema, {
-      method: "POST",
-      body: parsed.data,
-    });
-    refresh();
-    return { success: true, message: message ?? "Subcategoría creada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "createSubcategory");
-  }
+  return runMutation("createSubcategory", "Subcategoría creada", () =>
+    apiFetch(`/categories/${id.data}/subcategories`, SubcategorySchema, { method: "POST", body: parsed.data }),
+  );
 }
 
 export async function renameSubcategory(
@@ -84,17 +60,13 @@ export async function renameSubcategory(
   const parsed = NameSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const [category, subcategory] = ids.data;
-    const { message } = await apiFetch(`/categories/${category}/subcategories/${subcategory}`, SubcategorySchema, {
+  const [category, subcategory] = ids.data;
+  return runMutation("renameSubcategory", "Subcategoría actualizada", () =>
+    apiFetch(`/categories/${category}/subcategories/${subcategory}`, SubcategorySchema, {
       method: "PUT",
       body: parsed.data,
-    });
-    refresh();
-    return { success: true, message: message ?? "Subcategoría actualizada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "renameSubcategory");
-  }
+    }),
+  );
 }
 
 export async function setSubcategoryActive(
@@ -105,20 +77,10 @@ export async function setSubcategoryActive(
   const ids = EntityIdSchema.array().safeParse([categoryId, subcategoryId]);
   if (!ids.success) return validationFailure(ids.error);
 
-  try {
-    const [category, subcategory] = ids.data;
-    const { message } = await apiFetch(
-      `/categories/${category}/subcategories/${subcategory}/${active ? "activate" : "deactivate"}`,
-      EmptyDataSchema,
-      { method: "POST" },
-    );
-    refresh();
-    return {
-      success: true,
-      message: message ?? (active ? "Subcategoría activada" : "Subcategoría desactivada"),
-      data: null,
-    };
-  } catch (error) {
-    return toActionFailure(error, "setSubcategoryActive");
-  }
+  const [category, subcategory] = ids.data;
+  return runMutation("setSubcategoryActive", active ? "Subcategoría activada" : "Subcategoría desactivada", () =>
+    apiFetch(activationPath(`/categories/${category}/subcategories/${subcategory}`, active), EmptyDataSchema, {
+      method: "POST",
+    }),
+  );
 }

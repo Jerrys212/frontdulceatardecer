@@ -1,10 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { PlusIcon } from "lucide-react";
 
 import { AppSidebarNav } from "@/components/app-sidebar-nav";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +16,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { getCurrentUser } from "@/data/auth/get-current-user";
 import { UserMenu } from "@/features/auth/components/user-menu";
@@ -22,7 +25,20 @@ import { CHANGE_PASSWORD_PATH } from "@/lib/auth/routes";
 async function HeaderUser() {
   const user = await getCurrentUser();
   if (user.mustChangePassword) redirect(CHANGE_PASSWORD_PATH);
-  return <UserMenu user={user} />;
+  return (
+    <>
+      {user.role !== "Kitchen" && (
+        <Button asChild size="sm">
+          <Link href="/pos">
+            <PlusIcon data-icon="inline-start" />
+            <span className="hidden sm:inline">Nueva venta</span>
+            <span className="sr-only sm:hidden">Nueva venta</span>
+          </Link>
+        </Button>
+      )}
+      <UserMenu user={user} />
+    </>
+  );
 }
 
 async function SidebarNavigation() {
@@ -61,7 +77,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <SidebarTrigger className="text-muted-foreground" aria-label="Mostrar u ocultar menú" />
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <Suspense fallback={<div className="size-9 animate-pulse rounded-full bg-muted" />}>
+              <Suspense fallback={<Skeleton className="size-9 rounded-full" />}>
                 <HeaderUser />
               </Suspense>
             </div>

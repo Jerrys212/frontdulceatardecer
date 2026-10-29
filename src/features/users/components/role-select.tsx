@@ -1,6 +1,6 @@
 "use client";
 
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RoleSchema } from "@/data/auth/types";
 import { ROLE_LABELS } from "@/lib/auth/routes";
 
@@ -19,11 +19,13 @@ export function RoleSelect({ id, value, onChange, disabled, invalid }: RoleSelec
         <SelectValue placeholder="Selecciona un rol" />
       </SelectTrigger>
       <SelectContent>
-        {RoleSchema.options.map((role) => (
-          <SelectItem key={role} value={role}>
-            {ROLE_LABELS[role]}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {RoleSchema.options.map((role) => (
+            <SelectItem key={role} value={role}>
+              {ROLE_LABELS[role]}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );

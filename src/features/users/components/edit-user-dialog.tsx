@@ -3,11 +3,10 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { UpdateUserSchema, type UpdateUserInput } from "@/actions/users/schemas";
-import { updateUser } from "@/actions/users/update-user";
+import { updateUser } from "@/actions/users/user-actions";
 import { FormErrorAlert } from "@/components/forms/form-error-alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import type { User } from "@/data/users/types";
 import { RoleSelect } from "@/features/users/components/role-select";
 import type { ActionFailure } from "@/types/api";
@@ -110,7 +110,7 @@ export function EditUserDialog({ user, isSelf, onClose }: EditUserDialogProps) {
             </Button>
           </DialogClose>
           <Button type="submit" form="edit-user-form" disabled={isSubmitting || !form.formState.isDirty}>
-            {isSubmitting && <Loader2Icon className="animate-spin" />}
+            {isSubmitting && <Spinner data-icon="inline-start" />}
             {isSubmitting ? "Guardando…" : "Guardar cambios"}
           </Button>
         </DialogFooter>

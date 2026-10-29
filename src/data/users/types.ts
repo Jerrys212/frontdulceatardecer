@@ -1,9 +1,7 @@
 import { z } from "zod";
 
 import { RoleSchema } from "@/data/auth/types";
-import { EntityIdSchema } from "@/lib/validations/ids";
-
-export const UserIdSchema = EntityIdSchema;
+import { ActiveStatusSchema } from "@/lib/validations/status";
 
 export const UserSchema = z.object({
   id: z.string(),
@@ -37,13 +35,10 @@ export const CreateUserResponseSchema = TemporaryPasswordSchema.extend({
 
 export const USERS_PAGE_SIZE = 10;
 
-export const UserStatusSchema = z.enum(["active", "inactive"]);
-export type UserStatus = z.infer<typeof UserStatusSchema>;
-
 export const UsersQuerySchema = z.object({
   search: z.string().trim().max(100).optional().catch(undefined),
   role: RoleSchema.optional().catch(undefined),
-  status: UserStatusSchema.optional().catch(undefined),
+  status: ActiveStatusSchema.optional().catch(undefined),
   page: z.coerce.number().int().min(1).optional().catch(undefined),
 });
 export type UsersQuery = z.infer<typeof UsersQuerySchema>;

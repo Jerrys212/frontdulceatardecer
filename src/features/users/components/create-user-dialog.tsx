@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Loader2Icon, UserPlusIcon } from "lucide-react";
+import { UserPlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { createUser } from "@/actions/users/create-user";
 import { CreateUserSchema, type CreateUserInput } from "@/actions/users/schemas";
+import { createUser } from "@/actions/users/user-actions";
 import { FormErrorAlert } from "@/components/forms/form-error-alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { RoleSelect } from "@/features/users/components/role-select";
 import { TemporaryPasswordDialog, type TemporaryPassword } from "@/features/users/components/temporary-password-dialog";
 import type { ActionFailure } from "@/types/api";
@@ -64,7 +65,7 @@ export function CreateUserDialog() {
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button size="lg">
-            <UserPlusIcon />
+            <UserPlusIcon data-icon="inline-start" />
             Nuevo usuario
           </Button>
         </DialogTrigger>
@@ -137,7 +138,7 @@ export function CreateUserDialog() {
               </Button>
             </DialogClose>
             <Button type="submit" form="create-user-form" disabled={isSubmitting}>
-              {isSubmitting && <Loader2Icon className="animate-spin" />}
+              {isSubmitting && <Spinner data-icon="inline-start" />}
               {isSubmitting ? "Creando…" : "Crear usuario"}
             </Button>
           </DialogFooter>

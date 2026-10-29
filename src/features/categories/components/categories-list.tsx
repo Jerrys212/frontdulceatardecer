@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronRightIcon, PencilIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { ChevronRightIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { cn } from "cn";
 
 import {
@@ -12,16 +12,16 @@ import {
   setSubcategoryActive,
 } from "@/actions/categories/category-actions";
 import { ActiveSwitch } from "@/components/active-switch";
+import { EmptyState } from "@/components/empty-state";
+import { SearchInput } from "@/components/forms/search-input";
+import { StatusSelect } from "@/components/forms/status-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Category, Subcategory } from "@/data/categories/types";
 import { NameDialog } from "@/features/categories/components/name-dialog";
 import { normalizeSearchText } from "@/lib/utils";
-
-type StatusFilter = "all" | "active" | "inactive";
+import { matchesStatus, type StatusFilter } from "@/lib/validations/status";
 
 type DialogState =
   | { type: "rename-category"; category: Category }
@@ -48,7 +48,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
   const visible = useMemo(
     () =>
       categories
-        .filter((category) => status === "all" || category.isActive === (status === "active"))
+        .filter((category) => matchesStatus(category.isActive, status))
         .map((category) => ({
           category,
           matchesSubcategory:
@@ -72,42 +72,25 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
   return (
     <>
       <search className="flex flex-col gap-2 sm:flex-row">
-        <InputGroup className="h-9 bg-card sm:flex-1">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar categoría o subcategoría"
-            aria-label="Buscar categoría o subcategoría"
-          />
-        </InputGroup>
-        <Select value={status} onValueChange={(value) => setStatus(value as StatusFilter)}>
-          <SelectTrigger className="h-9 w-full bg-card sm:w-40" aria-label="Filtrar por estado">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Estado: todas</SelectItem>
-            <SelectItem value="active">Activas</SelectItem>
-            <SelectItem value="inactive">Inactivas</SelectItem>
-          </SelectContent>
-        </Select>
+        <SearchInput
+          value={search}
+          label="Buscar categoría o subcategoría"
+          onChange={setSearch}
+          className="h-9 bg-card sm:flex-1"
+        />
+        <StatusSelect value={status} onChange={setStatus} feminine />
       </search>
 
       <section aria-label="Categorías" className="overflow-hidden rounded-md border border-border-translucent bg-card">
         {visible.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 px-4 py-12 text-center">
-            <p className="font-medium">
-              {categories.length === 0 ? "Aún no hay categorías" : "No encontramos categorías"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {categories.length === 0
+          <EmptyState
+            title={categories.length === 0 ? "Aún no hay categorías" : "No encontramos categorías"}
+            description={
+              categories.length === 0
                 ? "Crea la primera con «Nueva categoría»."
-                : "Prueba con otra búsqueda o cambia el filtro de estado."}
-            </p>
-          </div>
+                : "Prueba con otra búsqueda o cambia el filtro de estado."
+            }
+          />
         ) : (
           <ul className="divide-y divide-border">
             {visible.map(({ category, matchesSubcategory }) => {
@@ -129,7 +112,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                             <span className="flex flex-wrap items-center gap-2 font-medium">
                               {category.name}
                               {!category.isActive && (
-                                <Badge variant="outline" className="rounded-sm">
+                                <Badge variant="outline">
                                   Inactiva
                                 </Badge>
                               )}
@@ -153,7 +136,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                         aria-label={`Editar ${category.name}`}
                         onClick={() => setDialog({ type: "rename-category", category })}
                       >
-                        <PencilIcon />
+                        <PencilIcon data-icon="inline-start" />
                         <span className="hidden sm:inline">Editar</span>
                       </Button>
                     </div>
@@ -180,7 +163,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                                   <span className="flex min-w-0 flex-1 items-center gap-2 text-sm">
                                     <span className="truncate">{subcategory.name}</span>
                                     {!subcategory.isActive && (
-                                      <Badge variant="outline" className="rounded-sm">
+                                      <Badge variant="outline">
                                         Inactiva
                                       </Badge>
                                     )}
@@ -212,7 +195,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                           className="mt-1 px-2"
                           onClick={() => setDialog({ type: "add-subcategory", category })}
                         >
-                          <PlusIcon />
+                          <PlusIcon data-icon="inline-start" />
                           Agregar subcategoría
                         </Button>
                       </div>

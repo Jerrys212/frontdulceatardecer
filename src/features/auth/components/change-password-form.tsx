@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, type FieldPath } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 import { changePassword } from "@/actions/auth/change-password";
@@ -13,6 +12,7 @@ import { FormErrorAlert } from "@/components/forms/form-error-alert";
 import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Spinner } from "@/components/ui/spinner";
 import type { ActionFailure } from "@/types/api";
 
 type PasswordFieldConfig = {
@@ -84,7 +84,7 @@ export function ChangePasswordForm({ redirectTo }: ChangePasswordFormProps) {
         ))}
       </FieldGroup>
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-        {isSubmitting && <Loader2Icon className="animate-spin" />}
+        {isSubmitting && <Spinner data-icon="inline-start" />}
         {isSubmitting ? "Guardando…" : "Cambiar contraseña"}
       </Button>
     </form>

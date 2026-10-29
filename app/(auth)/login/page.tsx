@@ -20,9 +20,9 @@ async function SignOutNotice({ searchParams }: Pick<PageProps<"/login">, "search
   if (!isSignOutReason(reason)) return null;
 
   return (
-    <Alert className="border-info/40 text-foreground">
-      <InfoIcon className="text-info" />
-      <AlertDescription className="text-foreground">{SIGN_OUT_REASONS[reason]}</AlertDescription>
+    <Alert variant="info">
+      <InfoIcon />
+      <AlertDescription>{SIGN_OUT_REASONS[reason]}</AlertDescription>
     </Alert>
   );
 }

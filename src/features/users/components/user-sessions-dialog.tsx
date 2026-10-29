@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Loader2Icon, LogOutIcon, MonitorSmartphoneIcon } from "lucide-react";
+import { LogOutIcon, MonitorSmartphoneIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { getUserSessions, revokeUserSessions } from "@/actions/users/user-account-actions";
+import { getUserSessions, revokeUserSessions } from "@/actions/users/user-actions";
+import { EmptyState } from "@/components/empty-state";
 import { FormErrorAlert } from "@/components/forms/form-error-alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +17,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import type { Session, User } from "@/data/users/types";
 import { formatDateTime } from "@/lib/formats";
+import { toastFailure } from "@/lib/toast-failure";
 import type { ActionFailure } from "@/types/api";
 
 type SessionsState =
@@ -51,7 +54,7 @@ export function UserSessionsDialog({ user, isSelf, onClose }: UserSessionsDialog
     startRevoke(async () => {
       const result = await revokeUserSessions(user.id);
       if (!result.success) {
-        toast.error(result.message, { description: result.errors.join(" ") });
+        toastFailure(result);
         return;
       }
       toast.success(result.message);
@@ -79,9 +82,7 @@ export function UserSessionsDialog({ user, isSelf, onClose }: UserSessionsDialog
         {state.status === "error" && <FormErrorAlert failure={state.failure} />}
         {state.status === "ready" &&
           (state.sessions.length === 0 ? (
-            <p className="rounded-md bg-muted px-4 py-6 text-center text-sm text-muted-foreground">
-              No tiene sesiones activas.
-            </p>
+            <EmptyState description="No tiene sesiones activas." className="rounded-md bg-muted p-4" />
           ) : (
             <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto">
               {state.sessions.map((session) => (
@@ -114,12 +115,8 @@ export function UserSessionsDialog({ user, isSelf, onClose }: UserSessionsDialog
                 <Button variant="outline" disabled={isRevoking} onClick={() => setConfirming(false)}>
                   Cancelar
                 </Button>
-                <Button
-                  className="bg-danger text-primary-foreground hover:bg-danger/85"
-                  disabled={isRevoking}
-                  onClick={revokeAll}
-                >
-                  {isRevoking && <Loader2Icon className="animate-spin" />}
+                <Button variant="danger" onClick={revokeAll} disabled={isRevoking}>
+                  {isRevoking && <Spinner data-icon="inline-start" />}
                   {isRevoking ? "Cerrando…" : "Sí, cerrar todas"}
                 </Button>
               </div>
@@ -127,12 +124,11 @@ export function UserSessionsDialog({ user, isSelf, onClose }: UserSessionsDialog
           ) : (
             <>
               <Button
-                variant="outline"
-                className="text-danger"
+                variant="danger-outline"
                 disabled={sessionCount === 0}
                 onClick={() => setConfirming(true)}
               >
-                <LogOutIcon />
+                <LogOutIcon data-icon="inline-start" />
                 Cerrar todas las sesiones
               </Button>
               <Button onClick={onClose}>Listo</Button>
