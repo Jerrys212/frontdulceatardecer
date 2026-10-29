@@ -24,14 +24,14 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
 
   return (
     <>
-      <Table>
+      <Table className="sm:table-fixed">
         <TableHeader className="bg-muted/60">
           <TableRow>
             <TableHead className="pl-4">Nombre</TableHead>
             <TableHead className="hidden sm:table-cell">Categoría / Subcategoría</TableHead>
-            <TableHead className="text-right">Precio</TableHead>
-            <TableHead className="w-20">Estado</TableHead>
-            <TableHead className="w-24 pr-4">
+            <TableHead className="text-center">Precio</TableHead>
+            <TableHead className="text-center">Estado</TableHead>
+            <TableHead className="pr-4">
               <span className="sr-only">Acciones</span>
             </TableHead>
           </TableRow>
@@ -39,7 +39,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
         <TableBody>
           {products.map((product) => (
             <TableRow key={product.id} className={cn(!product.isActive && "text-muted-foreground")}>
-              <TableCell className="max-w-0 pl-4 whitespace-normal">
+              <TableCell className="pl-4 whitespace-normal">
                 <span className="flex flex-wrap items-center gap-2 font-medium">
                   {product.name}
                   {!product.isActive && (
@@ -49,7 +49,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                   )}
                 </span>
                 {product.description && (
-                  <span className="block truncate text-xs text-muted-foreground" title={product.description}>
+                  <span className="line-clamp-2 text-xs text-muted-foreground" title={product.description}>
                     {product.description}
                   </span>
                 )}
@@ -60,8 +60,8 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
               <TableCell className="hidden text-muted-foreground sm:table-cell">
                 {product.categoryName} / {product.subcategoryName}
               </TableCell>
-              <TableCell className="text-right tabular-nums">{formatCurrency(product.price)}</TableCell>
-              <TableCell>
+              <TableCell className="text-center tabular-nums">{formatCurrency(product.price)}</TableCell>
+              <TableCell className="text-center">
                 <ActiveSwitch
                   checked={product.isActive}
                   label={`${product.isActive ? "Desactivar" : "Activar"} ${product.name}`}
@@ -70,7 +70,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                   onToggle={(active) => setProductActive(product.id, active)}
                 />
               </TableCell>
-              <TableCell className="pr-4 text-right">
+              <TableCell className="pr-4 text-center">
                 <Button variant="outline" size="sm" aria-label={`Editar ${product.name}`} onClick={() => setEditing(product)}>
                   <PencilIcon />
                   <span className="hidden sm:inline">Editar</span>

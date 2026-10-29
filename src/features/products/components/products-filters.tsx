@@ -28,6 +28,7 @@ export function ProductsFilters({ categories }: { categories: Category[] }) {
       if (value && value !== ALL) params.set(key, value);
       else params.delete(key);
     }
+    params.delete("page");
     const query = params.toString();
     startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false }));
   }
