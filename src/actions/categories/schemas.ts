@@ -1,12 +1,10 @@
 import { z } from "zod";
 
+import { catalogNameSchema } from "@/lib/validations/catalog";
+
 export const MAX_SUBCATEGORIES_ON_CREATE = 50;
 
-export const CatalogNameSchema = z
-  .string()
-  .trim()
-  .min(2, "El nombre debe tener al menos 2 caracteres")
-  .max(50, "El nombre no puede tener más de 50 caracteres");
+const CatalogNameSchema = catalogNameSchema();
 
 export const NameSchema = z.object({ name: CatalogNameSchema });
 export type NameInput = z.input<typeof NameSchema>;

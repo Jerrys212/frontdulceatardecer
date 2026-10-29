@@ -29,7 +29,10 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "Catálogo",
         icon: StoreIcon,
         roles: ["Admin"],
-        children: [{ title: "Categorías", href: "/catalog/categories" }],
+        children: [
+          { title: "Categorías", href: "/catalog/categories" },
+          { title: "Extras", href: "/catalog/extras" },
+        ],
       },
       { title: "Usuarios", href: "/users", icon: UsersIcon, roles: ["Admin"] },
     ],
