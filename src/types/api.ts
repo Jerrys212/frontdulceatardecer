@@ -8,6 +8,15 @@ export const ApiEnvelopeSchema = z.object({
   errors: z.array(z.string()),
 });
 
+export const PagedResultSchema = <T extends z.ZodType>(item: T) =>
+  z.object({
+    items: z.array(item),
+    page: z.number().int(),
+    pageSize: z.number().int(),
+    totalCount: z.number().int(),
+    totalPages: z.number().int(),
+  });
+
 export type ApiResult<T> = {
   data: T;
   message: string | null;
@@ -20,4 +29,4 @@ export type ActionFailure = {
   errors: string[];
 };
 
-export type ActionResult = { success: true; message: string } | ActionFailure;
+export type ActionResult<T = null> = { success: true; message: string; data: T } | ActionFailure;
