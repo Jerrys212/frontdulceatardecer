@@ -31,6 +31,7 @@ export const NAV_GROUPS: NavGroup[] = [
         roles: ["Admin"],
         children: [
           { title: "Categorías", href: "/catalog/categories" },
+          { title: "Productos", href: "/catalog/products" },
           { title: "Extras", href: "/catalog/extras" },
         ],
       },
