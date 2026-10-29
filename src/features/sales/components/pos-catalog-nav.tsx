@@ -12,27 +12,9 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 type PosCatalogNavProps = {
   categories: ActiveCategory[];
-  categoryId: string | null;
+  categoryId: string;
   subcategoryId: string | null;
 };
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        "h-9 shrink-0 rounded-full border px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-card text-foreground hover:bg-muted",
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 export function PosCatalogNav({ categories, categoryId, subcategoryId }: PosCatalogNavProps) {
   const router = useRouter();
@@ -65,16 +47,18 @@ export function PosCatalogNav({ categories, categoryId, subcategoryId }: PosCata
   function selectCategory(id: string) {
     setSearch("");
     navigate({ category: id, subcategory: null, search: null });
+    window.scrollTo({ top: 0 });
   }
 
   function selectSubcategory(id: string) {
     setSearch("");
     navigate({ category: categoryId, subcategory: id, search: null });
+    window.scrollTo({ top: 0 });
   }
 
   return (
-    <nav aria-label="Catálogo" className="flex flex-col gap-3">
-      <InputGroup className="h-10 bg-card md:max-w-sm">
+    <>
+      <InputGroup role="search" className="h-10 bg-card md:max-w-sm">
         <InputGroupAddon>{isPending ? <Loader2Icon className="animate-spin" /> : <SearchIcon />}</InputGroupAddon>
         <InputGroupInput
           type="search"
@@ -85,30 +69,55 @@ export function PosCatalogNav({ categories, categoryId, subcategoryId }: PosCata
           aria-label="Buscar producto"
         />
       </InputGroup>
-      <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Categorías">
-        {categories.map((category) => (
-          <Chip
-            key={category.id}
-            active={!searching && category.id === categoryId}
-            onClick={() => selectCategory(category.id)}
-          >
-            {category.name}
-          </Chip>
-        ))}
-      </div>
-      {!searching && subcategories.length > 0 && (
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Subcategorías">
-          {subcategories.map((subcategory) => (
-            <Chip
-              key={subcategory.id}
-              active={subcategory.id === subcategoryId}
-              onClick={() => selectSubcategory(subcategory.id)}
-            >
-              {subcategory.name}
-            </Chip>
-          ))}
+      <nav
+        aria-label="Catálogo"
+        className="sticky top-16 z-20 -mx-4 -mt-2 flex flex-col gap-2 bg-background px-4 pb-2 md:-mx-6 md:px-6"
+      >
+        <div className="flex gap-1 overflow-x-auto border-b border-border" role="group" aria-label="Categorías">
+          {categories.map((category) => {
+            const active = !searching && category.id === categoryId;
+            return (
+              <button
+                key={category.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => selectCategory(category.id)}
+                className={cn(
+                  "-mb-px h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  active
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {category.name}
+              </button>
+            );
+          })}
         </div>
-      )}
-    </nav>
+        {!searching && subcategories.length > 1 && (
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 py-0.5" role="group" aria-label="Subcategorías">
+            {subcategories.map((subcategory) => {
+              const active = subcategory.id === subcategoryId;
+              return (
+                <button
+                  key={subcategory.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => selectSubcategory(subcategory.id)}
+                  className={cn(
+                    "h-8 shrink-0 rounded-full border px-3 text-xs font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-foreground hover:bg-muted",
+                  )}
+                >
+                  {subcategory.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </nav>
+    </>
   );
 }

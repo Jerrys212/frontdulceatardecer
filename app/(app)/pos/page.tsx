@@ -73,6 +73,14 @@ async function loadEditSession(saleId: string): Promise<EditSession | Sale> {
   };
 }
 
+function EmptyCatalog({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="rounded-md border border-border-translucent bg-card px-4 py-12 text-center text-sm text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
 async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
   await requireRole(["Admin", "Cashier"]);
   const raw = await searchParams;
@@ -80,11 +88,7 @@ async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
   const categories = await getActiveCategories();
 
   if (categories.length === 0) {
-    return (
-      <p className="rounded-md border border-border-translucent bg-card px-4 py-12 text-center text-sm text-muted-foreground">
-        No hay categorías activas. Un administrador debe crearlas en Catálogo.
-      </p>
-    );
+    return <EmptyCatalog>No hay categorías activas. Un administrador debe crearlas en Catálogo.</EmptyCatalog>;
   }
 
   const category = categories.find((item) => item.id === firstValue(raw.category)) ?? categories[0];
@@ -109,13 +113,13 @@ async function PosCatalog({ searchParams }: { searchParams: SearchParams }) {
         {products.length > 0 ? (
           <ProductGrid products={products} showSubcategory={Boolean(search)} />
         ) : (
-          <p className="rounded-md border border-border-translucent bg-card px-4 py-12 text-center text-sm text-muted-foreground">
+          <EmptyCatalog>
             {search
               ? "No encontramos productos con ese nombre."
               : subcategory
                 ? "Esta subcategoría no tiene productos disponibles."
                 : "Esta categoría no tiene subcategorías disponibles."}
-          </p>
+          </EmptyCatalog>
         )}
       </section>
     </>
@@ -166,7 +170,12 @@ function CatalogSkeleton() {
       <Skeleton className="h-10 w-full max-w-sm" />
       <div className="flex gap-2">
         {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className="h-9 w-24 rounded-full" />
+          <Skeleton key={index} className="h-9 w-24" />
+        ))}
+      </div>
+      <div className="flex gap-2">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-8 w-20 rounded-full" />
         ))}
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-3">
