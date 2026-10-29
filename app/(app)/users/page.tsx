@@ -1,18 +1,16 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { PaginationBar } from "@/components/pagination-bar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCurrentUser } from "@/data/auth/get-current-user";
+import { requireAdmin } from "@/data/auth/require-admin";
 import { getUsers } from "@/data/users/get-users";
 import { UsersQuerySchema, type UsersQuery } from "@/data/users/types";
 import { CreateUserDialog } from "@/features/users/components/create-user-dialog";
 import { UsersFilters } from "@/features/users/components/users-filters";
 import { UsersTable } from "@/features/users/components/users-table";
-import { getHomePath } from "@/lib/auth/routes";
 
 export const metadata: Metadata = {
   title: "Usuarios",
@@ -35,8 +33,7 @@ function buildUsersHref(query: UsersQuery, page: number) {
 }
 
 async function UsersSection({ searchParams }: { searchParams: SearchParams }) {
-  const currentUser = await getCurrentUser();
-  if (currentUser.role !== "Admin") redirect(getHomePath(currentUser.role));
+  const currentUser = await requireAdmin();
 
   const raw = await searchParams;
   const query = UsersQuerySchema.parse({

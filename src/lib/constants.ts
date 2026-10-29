@@ -1,13 +1,17 @@
-import { LayoutGridIcon, UsersIcon, type LucideIcon } from "lucide-react";
+import { LayoutGridIcon, StoreIcon, UsersIcon, type LucideIcon } from "lucide-react";
 
 import type { Role } from "@/data/auth/types";
 
-export type NavItem = {
+export type NavLink = {
   title: string;
   href: string;
+};
+
+export type NavItem = {
+  title: string;
   icon: LucideIcon;
   roles: Role[];
-};
+} & ({ href: string; children?: never } | { href?: never; children: NavLink[] });
 
 export type NavGroup = {
   title?: string;
@@ -20,7 +24,15 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Administración",
-    items: [{ title: "Usuarios", href: "/users", icon: UsersIcon, roles: ["Admin"] }],
+    items: [
+      {
+        title: "Catálogo",
+        icon: StoreIcon,
+        roles: ["Admin"],
+        children: [{ title: "Categorías", href: "/catalog/categories" }],
+      },
+      { title: "Usuarios", href: "/users", icon: UsersIcon, roles: ["Admin"] },
+    ],
   },
 ];
 

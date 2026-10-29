@@ -1,8 +1,9 @@
 import { z } from "zod";
 
 import { RoleSchema } from "@/data/auth/types";
+import { EntityIdSchema } from "@/lib/validations/ids";
 
-export const UserIdSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Usuario no válido");
+export const UserIdSchema = EntityIdSchema;
 
 export const UserSchema = z.object({
   id: z.string(),
