@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
+import { toastFailure } from "@/lib/toast-failure";
 import type { ActionResult } from "@/types/api";
 
 type ActiveSwitchProps = {
@@ -24,7 +25,7 @@ export function ActiveSwitch({ checked, label, deactivateTitle, deactivateDescri
     setOptimisticChecked(active);
     const result = await onToggle(active);
     if (result.success) toast.success(result.message);
-    else toast.error(result.message, { description: result.errors.filter((error) => error !== result.message).join(" ") });
+    else toastFailure(result);
   }
 
   return (

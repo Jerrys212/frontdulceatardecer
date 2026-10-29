@@ -4,13 +4,12 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { ChangePasswordSchema, type ChangePasswordInput } from "@/actions/auth/schemas";
-import { toActionFailure, validationFailure } from "@/actions/to-action-failure";
+import { toActionFailure, validationFailure } from "@/actions/action-result";
 import { reportError } from "@/adapters/error-tracking";
-import { EmptyDataSchema } from "@/data/auth/types";
 import { apiFetch } from "@/data/client";
 import { SIGN_OUT_PATH } from "@/lib/auth/routes";
 import { REFRESH_COOKIE, applySessionCookies, refreshSession } from "@/lib/auth/session";
-import type { ActionResult } from "@/types/api";
+import { EmptyDataSchema, type ActionResult } from "@/types/api";
 
 export async function changePassword(input: ChangePasswordInput): Promise<ActionResult> {
   const parsed = ChangePasswordSchema.safeParse(input);

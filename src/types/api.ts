@@ -8,6 +8,8 @@ export const ApiEnvelopeSchema = z.object({
   errors: z.array(z.string()),
 });
 
+export const EmptyDataSchema = z.null();
+
 export const PagedResultSchema = <T extends z.ZodType>(item: T) =>
   z.object({
     items: z.array(item),

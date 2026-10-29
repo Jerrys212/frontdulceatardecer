@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { z } from "zod";
 
+import { runMutation, toActionFailure, validationFailure } from "@/actions/action-result";
 import {
   CancelSaleSchema,
   IdempotencyKeySchema,
@@ -12,11 +13,9 @@ import {
   type CancelSaleInput,
   type SaleRequestInput,
 } from "@/actions/sales/schemas";
-import { toActionFailure, validationFailure } from "@/actions/to-action-failure";
 import { ApiError } from "@/data/api-error";
 import { apiFetch } from "@/data/client";
-import { ActiveExtraSchema } from "@/data/extras/types";
-import { AvailableProductSchema } from "@/data/products/types";
+import { getActiveExtras, getAvailableProducts } from "@/data/pos/get-pos-catalog";
 import { SaleSchema, saleNumber, type PaymentMethod } from "@/data/sales/types";
 import type { CatalogPrices } from "@/lib/sales/cart";
 import { EntityIdSchema } from "@/lib/validations/ids";
@@ -82,13 +81,9 @@ export async function paySale(saleId: string, paymentMethod: PaymentMethod): Pro
   const parsed = PaySaleSchema.safeParse({ paymentMethod });
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const { message } = await apiFetch(`/sales/${id.data}/pay`, SaleSchema, { method: "POST", body: parsed.data });
-    refresh();
-    return { success: true, message: message ?? "Venta cobrada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "paySale");
-  }
+  return runMutation("paySale", "Venta cobrada", () =>
+    apiFetch(`/sales/${id.data}/pay`, SaleSchema, { method: "POST", body: parsed.data }),
+  );
 }
 
 export async function cancelSale(saleId: string, input: CancelSaleInput): Promise<ActionResult> {
@@ -97,22 +92,15 @@ export async function cancelSale(saleId: string, input: CancelSaleInput): Promis
   const parsed = CancelSaleSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  try {
-    const { message } = await apiFetch(`/sales/${id.data}/cancel`, SaleSchema, { method: "POST", body: parsed.data });
-    refresh();
-    return { success: true, message: message ?? "Venta cancelada", data: null };
-  } catch (error) {
-    return toActionFailure(error, "cancelSale");
-  }
+  return runMutation("cancelSale", "Venta cancelada", () =>
+    apiFetch(`/sales/${id.data}/cancel`, SaleSchema, { method: "POST", body: parsed.data }),
+  );
 }
 
 export async function getCatalogPrices(): Promise<ActionResult<CatalogPrices>> {
   try {
-    const [products, extras] = await Promise.all([
-      apiFetch("/products", AvailableProductSchema.array()),
-      apiFetch("/extras", ActiveExtraSchema.array()),
-    ]);
-    return { success: true, message: "", data: { products: products.data, extras: extras.data } };
+    const [products, extras] = await Promise.all([getAvailableProducts(), getActiveExtras()]);
+    return { success: true, message: "", data: { products, extras } };
   } catch (error) {
     return toActionFailure(error, "getCatalogPrices");
   }

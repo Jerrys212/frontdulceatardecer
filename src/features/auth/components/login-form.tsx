@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Loader2Icon } from "lucide-react";
 
 import { login } from "@/actions/auth/login";
 import { LoginSchema, type LoginInput } from "@/actions/auth/schemas";
@@ -12,6 +11,7 @@ import { PasswordInput } from "@/components/forms/password-input";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import type { ActionFailure } from "@/types/api";
 
 export function LoginForm() {
@@ -74,7 +74,7 @@ export function LoginForm() {
         />
       </FieldGroup>
       <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-        {isSubmitting && <Loader2Icon className="animate-spin" />}
+        {isSubmitting && <Spinner data-icon="inline-start" />}
         {isSubmitting ? "Entrando…" : "Entrar"}
       </Button>
     </form>

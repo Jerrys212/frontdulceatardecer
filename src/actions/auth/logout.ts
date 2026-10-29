@@ -4,10 +4,10 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { reportError } from "@/adapters/error-tracking";
-import { EmptyDataSchema } from "@/data/auth/types";
 import { requestApi } from "@/data/request-api";
 import { LOGIN_PATH } from "@/lib/auth/routes";
 import { ACCESS_COOKIE, REFRESH_COOKIE, clearSessionCookies } from "@/lib/auth/session";
+import { EmptyDataSchema } from "@/types/api";
 
 export async function logout() {
   const cookieStore = await cookies();

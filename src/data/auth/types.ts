@@ -21,5 +21,3 @@ export type TokenResponse = z.infer<typeof TokenResponseSchema>;
 export const LoginResponseSchema = TokenResponseSchema.extend({
   user: CurrentUserSchema,
 });
-
-export const EmptyDataSchema = z.null();

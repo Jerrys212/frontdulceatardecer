@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { NotebookPenIcon } from "lucide-react";
 
 import type { Role } from "@/data/auth/types";
 import { saleNumber, type Sale } from "@/data/sales/types";
 import { ElapsedTime } from "@/features/sales/components/elapsed-time";
 import { SaleActions } from "@/features/sales/components/sale-actions";
+import { SaleNote } from "@/features/sales/components/sale-note";
 import { SaleStatusBadge } from "@/features/sales/components/sale-status-badge";
 import { formatCurrency } from "@/lib/formats";
 
@@ -44,12 +44,7 @@ export function PendingSaleCard({ sale, role }: { sale: Sale; role: Role }) {
                 {extra.quantity > 1 && ` ×${extra.quantity}`}
               </p>
             ))}
-            {item.note && (
-              <p className="flex items-start gap-1 pl-5 text-xs text-warning italic">
-                <NotebookPenIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                {item.note}
-              </p>
-            )}
+            {item.note && <SaleNote note={item.note} className="pl-5" />}
           </li>
         ))}
       </ul>

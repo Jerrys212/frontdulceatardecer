@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { cancelSale } from "@/actions/sales/sale-actions";
@@ -18,9 +18,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { saleNumber, type Sale } from "@/data/sales/types";
 import { formatCurrency } from "@/lib/formats";
+import { toastFailure } from "@/lib/toast-failure";
 
 type CancelSaleDialogProps = {
   sale: Pick<Sale, "id" | "status" | "total">;
@@ -43,7 +45,7 @@ export function CancelSaleDialog({ sale, onClose, onCancelled }: CancelSaleDialo
     startTransition(async () => {
       const result = await cancelSale(sale.id, { reason });
       if (!result.success) {
-        toast.error(result.message, { description: result.errors.filter((item) => item !== result.message).join(" ") });
+        toastFailure(result);
         return;
       }
       toast.success(`${result.message} ${saleNumber(sale.id)}`);
@@ -62,9 +64,9 @@ export function CancelSaleDialog({ sale, onClose, onCancelled }: CancelSaleDialo
           </DialogDescription>
         </DialogHeader>
         {sale.status === "Paid" && (
-          <Alert className="border-warning/50 bg-warning/10 text-foreground">
-            <TriangleAlertIcon className="text-warning" />
-            <AlertDescription className="text-foreground">
+          <Alert variant="warning">
+            <TriangleAlertIcon />
+            <AlertDescription>
               Esta venta ya se cobró. Al cancelarla deja de contar en los ingresos; recuerda devolver el dinero si aplica.
             </AlertDescription>
           </Alert>
@@ -92,8 +94,8 @@ export function CancelSaleDialog({ sale, onClose, onCancelled }: CancelSaleDialo
               Volver
             </Button>
           </DialogClose>
-          <Button className="bg-danger text-primary-foreground hover:bg-danger/85" disabled={isPending} onClick={confirm}>
-            {isPending && <Loader2Icon className="animate-spin" />}
+          <Button variant="danger" onClick={confirm} disabled={isPending}>
+            {isPending && <Spinner data-icon="inline-start" />}
             {isPending ? "Cancelando…" : "Cancelar venta"}
           </Button>
         </DialogFooter>

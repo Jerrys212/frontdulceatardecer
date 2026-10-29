@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CircleAlertIcon,
-  Loader2Icon,
-  NotebookPenIcon,
   ShoppingBagIcon,
   SlidersHorizontalIcon,
   SplitIcon,
@@ -16,14 +14,18 @@ import { cn } from "cn";
 import { toast } from "sonner";
 
 import { getCatalogPrices, registerSale, updateSale, type SaleSubmitResult } from "@/actions/sales/sale-actions";
+import { EmptyState } from "@/components/empty-state";
 import { QuantityStepper } from "@/components/quantity-stepper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import type { ActiveExtra } from "@/data/extras/types";
 import { LineDetailsDialog } from "@/features/sales/components/line-details-dialog";
 import { PricesChangedDialog } from "@/features/sales/components/prices-changed-dialog";
+import { SaleNote } from "@/features/sales/components/sale-note";
 import { useCartHydrated, useCartStore } from "@/features/sales/store/cart-store";
 import { formatCurrency } from "@/lib/formats";
 import { fromCents } from "@/lib/money";
@@ -36,6 +38,7 @@ import {
   toSaleItems,
   type CartLine,
 } from "@/lib/sales/cart";
+import { toastFailure } from "@/lib/toast-failure";
 
 const UNAVAILABLE_HINT = "no está disponible";
 const CONCURRENT_EDIT_HINT = "modificada por otro usuario";
@@ -72,7 +75,7 @@ function CartLineItem({
         <ul className="flex flex-wrap gap-1" aria-label="Extras">
           {line.extras.map((extra) => (
             <li key={extra.extraId}>
-              <Badge variant="secondary" className="rounded-sm font-normal">
+              <Badge variant="secondary">
                 + {extra.name} ×{extra.quantity}
               </Badge>
             </li>
@@ -80,10 +83,7 @@ function CartLineItem({
         </ul>
       )}
       {line.note.trim() !== "" && (
-        <p className="flex items-start gap-1.5 text-xs text-warning">
-          <NotebookPenIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-          <span className="italic">{line.note}</span>
-        </p>
+        <SaleNote note={line.note} />
       )}
       {line.notice && (
         <p className={cn("text-xs font-medium", line.unavailable ? "text-danger" : "text-info")}>{line.notice}</p>
@@ -118,9 +118,8 @@ function CartLineItem({
             <SplitIcon />
           </Button>
           <Button
-            variant="ghost"
+            variant="danger-ghost"
             size="icon"
-            className="text-danger hover:text-danger"
             aria-label={`Quitar ${line.productName}`}
             onClick={() => removeLine(line.key)}
           >
@@ -182,22 +181,21 @@ export function CartPanel({ extras, onClose }: CartPanelProps) {
       return;
     }
 
-    const details = result.errors.filter((error) => error !== result.message).join(" ");
     const mentions = (text: string) => [result.message, ...result.errors].some((message) => message.includes(text));
 
     if (mentions(UNAVAILABLE_HINT)) {
       await refreshPrices();
-      toast.error(result.message, { description: details || "Quita los productos marcados y vuelve a intentar." });
+      toastFailure(result, "Quita los productos marcados y vuelve a intentar.");
       return;
     }
     if (mode.type === "edit" && (mentions(CONCURRENT_EDIT_HINT) || mentions(NOT_EDITABLE_HINT))) {
       const { saleId } = mode;
-      toast.error(result.message, { description: details || undefined });
+      toastFailure(result);
       reset();
       router.replace(mentions(NOT_EDITABLE_HINT) ? `/sales/${saleId}` : `/pos?edit=${saleId}`);
       return;
     }
-    toast.error(result.message, { description: details || undefined });
+    toastFailure(result);
   }
 
   async function submit() {
@@ -252,12 +250,12 @@ export function CartPanel({ extras, onClose }: CartPanelProps) {
               router.push("/sales/pending");
             }}
           >
-            <XIcon />
+            <XIcon data-icon="inline-start" />
             Salir sin guardar
           </Button>
         ) : (
           <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" disabled={lines.length === 0} onClick={reset}>
-            <Trash2Icon />
+            <Trash2Icon data-icon="inline-start" />
             Vaciar
           </Button>
         )}
@@ -268,11 +266,11 @@ export function CartPanel({ extras, onClose }: CartPanelProps) {
         )}
       </header>
 
-      <div className="border-b border-border px-4 py-3">
-        <div className="mb-1.5 flex items-center justify-between text-sm">
-          <label htmlFor="customer-description" className="font-medium">
+      <Field className="gap-1.5 border-b border-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <FieldLabel htmlFor="customer-description">
             Descripción del cliente <span className="font-normal text-muted-foreground">(opcional)</span>
-          </label>
+          </FieldLabel>
           <span className="text-xs text-muted-foreground tabular-nums">
             {customerDescription.length}/{MAX_CUSTOMER_LENGTH}
           </span>
@@ -286,14 +284,11 @@ export function CartPanel({ extras, onClose }: CartPanelProps) {
           autoComplete="off"
           onChange={(event) => setCustomerDescription(event.target.value)}
         />
-      </div>
+      </Field>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {lines.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-4 py-12 text-center text-muted-foreground">
-            <ShoppingBagIcon className="size-8" aria-hidden="true" />
-            <p className="text-sm">Toca un producto para agregarlo al pedido.</p>
-          </div>
+          <EmptyState icon={ShoppingBagIcon} description="Toca un producto para agregarlo al pedido." />
         ) : (
           <>
             <ul aria-label="Productos del pedido">
@@ -332,10 +327,10 @@ export function CartPanel({ extras, onClose }: CartPanelProps) {
         <Button
           size="lg"
           className="h-11 w-full text-base"
-          disabled={lines.length === 0 || hasUnavailable || isSubmitting}
           onClick={submit}
+          disabled={isSubmitting || lines.length === 0 || hasUnavailable}
         >
-          {isSubmitting && <Loader2Icon className="animate-spin" />}
+          {isSubmitting && <Spinner data-icon="inline-start" />}
           {actionLabel} · {formatCurrency(total)}
         </Button>
       </footer>

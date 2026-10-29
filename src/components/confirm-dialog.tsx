@@ -1,7 +1,6 @@
 "use client";
 
 import { useTransition } from "react";
-import { Loader2Icon } from "lucide-react";
 
 import {
   AlertDialog,
@@ -13,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 type ConfirmDialogProps = {
   title: string;
@@ -45,11 +45,11 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
           <Button
-            className={destructive ? "bg-danger text-primary-foreground hover:bg-danger/85" : undefined}
-            disabled={isPending}
+            variant={destructive ? "danger" : "default"}
             onClick={() => startTransition(onConfirm)}
+            disabled={isPending}
           >
-            {isPending && <Loader2Icon className="animate-spin" />}
+            {isPending && <Spinner data-icon="inline-start" />}
             {isPending ? pendingLabel : confirmLabel}
           </Button>
         </AlertDialogFooter>

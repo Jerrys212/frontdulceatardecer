@@ -12,7 +12,7 @@ import {
 import { cn } from "cn";
 import { toast } from "sonner";
 
-import { deactivateUser, reactivateUser, resetUserPassword } from "@/actions/users/user-account-actions";
+import { deactivateUser, reactivateUser, resetUserPassword } from "@/actions/users/user-actions";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -31,6 +32,7 @@ import { RoleBadge } from "@/features/users/components/role-badge";
 import { TemporaryPasswordDialog, type TemporaryPassword } from "@/features/users/components/temporary-password-dialog";
 import { UserSessionsDialog } from "@/features/users/components/user-sessions-dialog";
 import { formatDate, getInitials } from "@/lib/formats";
+import { toastFailure } from "@/lib/toast-failure";
 import type { ActionResult } from "@/types/api";
 
 type ConfirmKind = "deactivate" | "reactivate" | "reset";
@@ -88,7 +90,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
           : await resetUserPassword(user.id);
 
     if (!result.success) {
-      toast.error(result.message, { description: result.errors.filter((error) => error !== result.message).join(" ") });
+      toastFailure(result);
       return;
     }
     toast.success(result.message);
@@ -127,12 +129,12 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                       <span className="flex flex-wrap items-center gap-1.5 font-medium">
                         {user.fullName}
                         {isSelf && (
-                          <Badge variant="outline" className="rounded-sm">
+                          <Badge variant="outline">
                             Tú
                           </Badge>
                         )}
                         {user.mustChangePassword && user.isActive && (
-                          <Badge className="rounded-sm bg-warning text-dark">Debe cambiar contraseña</Badge>
+                          <Badge variant="warning">Debe cambiar contraseña</Badge>
                         )}
                       </span>
                       <span className="text-xs text-muted-foreground">@{user.username}</span>
@@ -152,39 +154,43 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 shadow-dropdown">
-                      <DropdownMenuItem onSelect={() => setDialog({ type: "edit", user })}>
-                        <PencilIcon />
-                        Editar
-                      </DropdownMenuItem>
-                      {user.isActive && (
-                        <>
-                          <DropdownMenuItem onSelect={() => setDialog({ type: "sessions", user })}>
-                            <MonitorSmartphoneIcon />
-                            Ver sesiones
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onSelect={() => setDialog({ type: "confirm", kind: "reset", user })}>
-                            <KeyRoundIcon />
-                            Restablecer contraseña
-                          </DropdownMenuItem>
-                        </>
-                      )}
+                      <DropdownMenuGroup>
+                        <DropdownMenuItem onSelect={() => setDialog({ type: "edit", user })}>
+                          <PencilIcon />
+                          Editar
+                        </DropdownMenuItem>
+                        {user.isActive && (
+                          <>
+                            <DropdownMenuItem onSelect={() => setDialog({ type: "sessions", user })}>
+                              <MonitorSmartphoneIcon />
+                              Ver sesiones
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setDialog({ type: "confirm", kind: "reset", user })}>
+                              <KeyRoundIcon />
+                              Restablecer contraseña
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuGroup>
                       {!isSelf && (
                         <>
                           <DropdownMenuSeparator />
-                          {user.isActive ? (
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onSelect={() => setDialog({ type: "confirm", kind: "deactivate", user })}
-                            >
-                              <UserXIcon />
-                              Desactivar
-                            </DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onSelect={() => setDialog({ type: "confirm", kind: "reactivate", user })}>
-                              <UserCheckIcon />
-                              Reactivar
-                            </DropdownMenuItem>
-                          )}
+                          <DropdownMenuGroup>
+                            {user.isActive ? (
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => setDialog({ type: "confirm", kind: "deactivate", user })}
+                              >
+                                <UserXIcon />
+                                Desactivar
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onSelect={() => setDialog({ type: "confirm", kind: "reactivate", user })}>
+                                <UserCheckIcon />
+                                Reactivar
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuGroup>
                         </>
                       )}
                     </DropdownMenuContent>

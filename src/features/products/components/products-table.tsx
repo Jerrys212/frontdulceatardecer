@@ -43,7 +43,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
                 <span className="flex flex-wrap items-center gap-2 font-medium">
                   {product.name}
                   {!product.isActive && (
-                    <Badge variant="outline" className="rounded-sm">
+                    <Badge variant="outline">
                       Inactivo
                     </Badge>
                   )}
@@ -72,7 +72,7 @@ export function ProductsTable({ products, categories }: ProductsTableProps) {
               </TableCell>
               <TableCell className="pr-4 text-center">
                 <Button variant="outline" size="sm" aria-label={`Editar ${product.name}`} onClick={() => setEditing(product)}>
-                  <PencilIcon />
+                  <PencilIcon data-icon="inline-start" />
                   <span className="hidden sm:inline">Editar</span>
                 </Button>
               </TableCell>

@@ -56,13 +56,13 @@ export function TemporaryPasswordDialog({ value, onClose }: TemporaryPasswordDia
             {value?.password}
           </output>
           <Button type="button" variant="outline" className="h-auto" onClick={copyPassword}>
-            {copied ? <CheckIcon className="text-success" /> : <CopyIcon />}
+            {copied ? <CheckIcon data-icon="inline-start" className="text-success" /> : <CopyIcon data-icon="inline-start" />}
             {copied ? "Copiada" : "Copiar"}
           </Button>
         </div>
-        <Alert className="border-warning/50 bg-warning/10 text-foreground">
-          <TriangleAlertIcon className="text-warning" />
-          <AlertDescription className="text-foreground">
+        <Alert variant="warning">
+          <TriangleAlertIcon />
+          <AlertDescription>
             Esta contraseña no se volverá a mostrar. Entrégala al usuario: deberá cambiarla al iniciar sesión.
           </AlertDescription>
         </Alert>

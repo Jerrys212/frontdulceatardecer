@@ -37,7 +37,7 @@ export function AutoRefresh({ intervalMs }: { intervalMs: number }) {
         Actualizado hace {seconds} s
       </span>
       <Button variant="outline" size="sm" disabled={isPending} onClick={refreshNow}>
-        <RefreshCwIcon className={cn(isPending && "animate-spin")} />
+        <RefreshCwIcon data-icon="inline-start" className={cn(isPending && "animate-spin")} />
         Actualizar
       </Button>
     </div>

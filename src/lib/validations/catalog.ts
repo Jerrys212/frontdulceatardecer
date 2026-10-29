@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MONEY_PATTERN } from "@/lib/money";
+
 export const MAX_PRICE = 9999.99;
 
 export function catalogNameSchema(maxLength = 50) {
@@ -20,7 +22,7 @@ export function priceSchema({ allowZero }: { allowZero: boolean }) {
     .string()
     .trim()
     .min(1, { error: "Ingresa el precio", abort: true })
-    .regex(/^\d+(\.\d{1,2})?$/, "Usa un número con máximo 2 decimales, por ejemplo 15 o 15.50")
+    .regex(MONEY_PATTERN, "Usa un número con máximo 2 decimales, por ejemplo 15 o 15.50")
     .transform(Number)
     .refine((price) => price >= minimum && price <= MAX_PRICE, rangeMessage);
 }

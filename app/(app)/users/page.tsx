@@ -2,15 +2,18 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { EmptyState } from "@/components/empty-state";
+import { PageHeader } from "@/components/page-header";
 import { PaginationBar } from "@/components/pagination-bar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireAdmin } from "@/data/auth/require-admin";
+import { requireAdmin } from "@/data/auth/require-role";
 import { getUsers } from "@/data/users/get-users";
 import { UsersQuerySchema, type UsersQuery } from "@/data/users/types";
 import { CreateUserDialog } from "@/features/users/components/create-user-dialog";
 import { UsersFilters } from "@/features/users/components/users-filters";
 import { UsersTable } from "@/features/users/components/users-table";
+import { firstValue, withQuery } from "@/lib/search-params";
 
 export const metadata: Metadata = {
   title: "Usuarios",
@@ -18,18 +21,8 @@ export const metadata: Metadata = {
 
 type SearchParams = PageProps<"/users">["searchParams"];
 
-function firstValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 function buildUsersHref(query: UsersQuery, page: number) {
-  const params = new URLSearchParams();
-  if (query.search) params.set("search", query.search);
-  if (query.role) params.set("role", query.role);
-  if (query.status) params.set("status", query.status);
-  if (page > 1) params.set("page", String(page));
-  const queryString = params.toString();
-  return queryString ? `/users?${queryString}` : "/users";
+  return withQuery("/users", { ...query, page: page > 1 ? page : undefined });
 }
 
 async function UsersSection({ searchParams }: { searchParams: SearchParams }) {
@@ -51,13 +44,12 @@ async function UsersSection({ searchParams }: { searchParams: SearchParams }) {
         {result.items.length > 0 ? (
           <UsersTable users={result.items} currentUserId={currentUser.id} />
         ) : (
-          <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
-            <p className="font-medium">
-              {result.totalCount > 0 ? "Esta página ya no tiene usuarios" : "No encontramos usuarios"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {hasFilters ? "Prueba con otra búsqueda o quita los filtros." : "Crea el primero con «Nuevo usuario»."}
-            </p>
+          <EmptyState
+            title={result.totalCount > 0 ? "Esta página ya no tiene usuarios" : "No encontramos usuarios"}
+            description={
+              hasFilters ? "Prueba con otra búsqueda o quita los filtros." : "Crea el primero con «Nuevo usuario»."
+            }
+          >
             {(hasFilters || result.totalCount > 0) && (
               <Button asChild variant="outline" size="sm">
                 <Link href={result.totalCount > 0 ? buildUsersHref(query, 1) : "/users"}>
@@ -65,7 +57,7 @@ async function UsersSection({ searchParams }: { searchParams: SearchParams }) {
                 </Link>
               </Button>
             )}
-          </div>
+          </EmptyState>
         )}
       </div>
       <PaginationBar
@@ -93,10 +85,9 @@ function UsersSectionSkeleton() {
 export default function UsersPage({ searchParams }: PageProps<"/users">) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Usuarios</h1>
+      <PageHeader title="Usuarios">
         <CreateUserDialog />
-      </header>
+      </PageHeader>
       <Suspense fallback={<Skeleton className="h-9 w-full" />}>
         <UsersFilters />
       </Suspense>

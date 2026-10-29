@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
+import { PageHeader } from "@/components/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
-import { requireAdmin } from "@/data/auth/require-admin";
+import { requireAdmin } from "@/data/auth/require-role";
 import { getAllCategories } from "@/data/categories/get-all-categories";
 import { CategoriesList } from "@/features/categories/components/categories-list";
 import { CreateCategoryDialog } from "@/features/categories/components/create-category-dialog";
@@ -33,15 +34,12 @@ function CategoriesSkeleton() {
 export default function CategoriesPage() {
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold">Categorías</h1>
-          <p className="text-sm text-muted-foreground">
-            Organizan los productos del punto de venta. No se borran: se activan o desactivan.
-          </p>
-        </div>
+      <PageHeader
+        title="Categorías"
+        description="Organizan los productos del punto de venta. No se borran: se activan o desactivan."
+      >
         <CreateCategoryDialog />
-      </header>
+      </PageHeader>
       <Suspense fallback={<CategoriesSkeleton />}>
         <CategoriesSection />
       </Suspense>

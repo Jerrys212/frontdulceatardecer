@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/data/auth/get-current-user";
 import { ROLE_LABELS } from "@/lib/auth/routes";
 
@@ -22,7 +23,7 @@ async function Welcome() {
 export default function HomePage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <Suspense fallback={<div className="h-14 w-72 animate-pulse rounded-md bg-muted" />}>
+      <Suspense fallback={<Skeleton className="h-14 w-72" />}>
         <Welcome />
       </Suspense>
       <section

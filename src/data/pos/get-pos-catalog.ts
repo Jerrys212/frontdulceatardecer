@@ -6,6 +6,7 @@ import { ActiveCategorySchema } from "@/data/categories/types";
 import { apiFetch } from "@/data/client";
 import { ActiveExtraSchema } from "@/data/extras/types";
 import { AvailableProductSchema } from "@/data/products/types";
+import { withQuery } from "@/lib/search-params";
 
 export const getActiveCategories = cache(async () => {
   const { data } = await apiFetch("/categories", ActiveCategorySchema.array());
@@ -23,12 +24,7 @@ type AvailableProductsFilter = {
   search?: string;
 };
 
-export async function getAvailableProducts({ categoryId, subcategoryId, search }: AvailableProductsFilter = {}) {
-  const params = new URLSearchParams();
-  if (categoryId) params.set("categoryId", categoryId);
-  if (subcategoryId) params.set("subcategoryId", subcategoryId);
-  if (search) params.set("search", search);
-  const query = params.toString();
-  const { data } = await apiFetch(query ? `/products?${query}` : "/products", AvailableProductSchema.array());
+export async function getAvailableProducts(filter: AvailableProductsFilter = {}) {
+  const { data } = await apiFetch(withQuery("/products", filter), AvailableProductSchema.array());
   return data;
 }

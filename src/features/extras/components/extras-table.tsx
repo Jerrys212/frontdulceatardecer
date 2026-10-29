@@ -1,24 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PencilIcon, SearchIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { cn } from "cn";
 
 import { setExtraActive } from "@/actions/extras/extra-actions";
 import { ActiveSwitch } from "@/components/active-switch";
+import { EmptyState } from "@/components/empty-state";
+import { SearchInput } from "@/components/forms/search-input";
+import { StatusSelect } from "@/components/forms/status-select";
 import { PaginationBar } from "@/components/pagination-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Extra } from "@/data/extras/types";
 import { ExtraFormDialog } from "@/features/extras/components/extra-form-dialog";
 import { formatCurrency } from "@/lib/formats";
 import { paginate } from "@/lib/pagination";
 import { normalizeSearchText } from "@/lib/utils";
-
-type StatusFilter = "all" | "active" | "inactive";
+import { matchesStatus, type StatusFilter } from "@/lib/validations/status";
 
 export function ExtrasTable({ extras }: { extras: Extra[] }) {
   const [search, setSearch] = useState("");
@@ -31,7 +31,7 @@ export function ExtrasTable({ extras }: { extras: Extra[] }) {
     () =>
       extras.filter(
         (extra) =>
-          (status === "all" || extra.isActive === (status === "active")) &&
+          matchesStatus(extra.isActive, status) &&
           (term === "" || normalizeSearchText(extra.name).includes(term)),
       ),
     [extras, status, term],
@@ -41,46 +41,34 @@ export function ExtrasTable({ extras }: { extras: Extra[] }) {
   return (
     <>
       <search className="flex flex-col gap-2 sm:flex-row">
-        <InputGroup className="h-9 bg-card sm:flex-1">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            type="search"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder="Buscar extra"
-            aria-label="Buscar extra"
-          />
-        </InputGroup>
-        <Select value={status} onValueChange={(value) => {
-            setStatus(value as StatusFilter);
+        <SearchInput
+          value={search}
+          label="Buscar extra"
+          onChange={(value) => {
+            setSearch(value);
             setPage(1);
-          }}>
-          <SelectTrigger className="h-9 w-full bg-card sm:w-40" aria-label="Filtrar por estado">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Estado: todos</SelectItem>
-            <SelectItem value="active">Activos</SelectItem>
-            <SelectItem value="inactive">Inactivos</SelectItem>
-          </SelectContent>
-        </Select>
+          }}
+          className="h-9 bg-card sm:flex-1"
+        />
+        <StatusSelect
+          value={status}
+          onChange={(value) => {
+            setStatus(value);
+            setPage(1);
+          }}
+        />
       </search>
 
       <section aria-label="Extras" className="overflow-hidden rounded-md border border-border-translucent bg-card">
         {visible.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 px-4 py-12 text-center">
-            <p className="font-medium">{extras.length === 0 ? "Aún no hay extras" : "No encontramos extras"}</p>
-            <p className="text-sm text-muted-foreground">
-              {extras.length === 0
+          <EmptyState
+            title={extras.length === 0 ? "Aún no hay extras" : "No encontramos extras"}
+            description={
+              extras.length === 0
                 ? "Crea el primero con «Nuevo extra»."
-                : "Prueba con otra búsqueda o cambia el filtro de estado."}
-            </p>
-          </div>
+                : "Prueba con otra búsqueda o cambia el filtro de estado."
+            }
+          />
         ) : (
           <Table className="sm:table-fixed">
             <TableHeader className="bg-muted/60">
@@ -100,7 +88,7 @@ export function ExtrasTable({ extras }: { extras: Extra[] }) {
                     <span className="flex flex-wrap items-center gap-2">
                       {extra.name}
                       {!extra.isActive && (
-                        <Badge variant="outline" className="rounded-sm">
+                        <Badge variant="outline">
                           Inactivo
                         </Badge>
                       )}
@@ -108,7 +96,7 @@ export function ExtrasTable({ extras }: { extras: Extra[] }) {
                   </TableCell>
                   <TableCell className="text-center tabular-nums">
                     {extra.price === 0 ? (
-                      <Badge className="rounded-sm bg-success/15 text-success">Gratis</Badge>
+                      <Badge variant="success-subtle">Gratis</Badge>
                     ) : (
                       formatCurrency(extra.price)
                     )}
@@ -129,7 +117,7 @@ export function ExtrasTable({ extras }: { extras: Extra[] }) {
                       aria-label={`Editar ${extra.name}`}
                       onClick={() => setEditing(extra)}
                     >
-                      <PencilIcon />
+                      <PencilIcon data-icon="inline-start" />
                       <span className="hidden sm:inline">Editar</span>
                     </Button>
                   </TableCell>

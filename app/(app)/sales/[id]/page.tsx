@@ -2,17 +2,17 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeftIcon, BanIcon, CircleCheckIcon, NotebookPenIcon, ReceiptTextIcon, type LucideIcon } from "lucide-react";
+import { ArrowLeftIcon, BanIcon, CircleCheckIcon, ReceiptTextIcon, type LucideIcon } from "lucide-react";
 import { cn } from "cn";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ApiError } from "@/data/api-error";
-import { requireRole } from "@/data/auth/require-admin";
+import { requireRole } from "@/data/auth/require-role";
 import { getSale } from "@/data/sales/get-sales";
 import { PAYMENT_METHOD_LABELS, saleNumber, type Sale } from "@/data/sales/types";
 import { SaleActions } from "@/features/sales/components/sale-actions";
+import { SaleNote } from "@/features/sales/components/sale-note";
 import { SaleStatusBadge } from "@/features/sales/components/sale-status-badge";
 import { formatCurrency, formatDateTime, formatTime } from "@/lib/formats";
 import { EntityIdSchema } from "@/lib/validations/ids";
@@ -59,13 +59,7 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
   const id = EntityIdSchema.safeParse((await params).id);
   if (!id.success) notFound();
 
-  let sale: Sale;
-  try {
-    sale = await getSale(id.data);
-  } catch (error) {
-    if (error instanceof ApiError && error.statusCode === 404) notFound();
-    throw error;
-  }
+  const sale = await getSale(id.data);
 
   return (
     <>
@@ -106,12 +100,7 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
                         <span className="tabular-nums">{extra.price === 0 ? "Gratis" : formatCurrency(extra.price)}</span>
                       </p>
                     ))}
-                    {item.note && (
-                      <p className="mt-1 flex items-start gap-1 text-xs text-warning italic">
-                        <NotebookPenIcon className="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-                        {item.note}
-                      </p>
-                    )}
+                    {item.note && <SaleNote note={item.note} className="mt-1" />}
                   </TableCell>
                   <TableCell className="text-center tabular-nums">{item.quantity}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(item.unitPrice)}</TableCell>
@@ -210,7 +199,7 @@ export default function SaleDetailPage({ params }: PageProps<"/sales/[id]">) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <Button asChild variant="ghost" size="sm" className="self-start text-muted-foreground">
         <Link href="/sales/pending">
-          <ArrowLeftIcon />
+          <ArrowLeftIcon data-icon="inline-start" />
           Pendientes
         </Link>
       </Button>

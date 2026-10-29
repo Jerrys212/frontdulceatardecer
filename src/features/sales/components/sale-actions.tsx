@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -24,7 +25,7 @@ type SaleActionsProps = {
   layout: "card" | "detail";
 };
 
-export function getSalePermissions(status: Sale["status"], role: Role) {
+function getSalePermissions(status: Sale["status"], role: Role) {
   const canSell = role === "Admin" || role === "Cashier";
   return {
     canPay: canSell && status === "Preparing",
@@ -50,21 +51,21 @@ export function SaleActions({ sale, role, layout }: SaleActionsProps) {
       <div className="flex flex-col gap-2">
         {canPay && (
           <Button size="lg" onClick={() => setDialog("pay")}>
-            <BanknoteIcon />
+            <BanknoteIcon data-icon="inline-start" />
             Cobrar
           </Button>
         )}
         {canEdit && (
           <Button asChild size="lg" variant="outline">
             <Link href={`/pos?edit=${sale.id}`}>
-              <PencilIcon />
+              <PencilIcon data-icon="inline-start" />
               Modificar
             </Link>
           </Button>
         )}
         {canCancel && (
-          <Button size="lg" variant="outline" className="border-danger/50 text-danger hover:bg-danger/10 hover:text-danger" onClick={() => setDialog("cancel")}>
-            <BanIcon />
+          <Button size="lg" variant="danger-outline" onClick={() => setDialog("cancel")}>
+            <BanIcon data-icon="inline-start" />
             Cancelar venta
           </Button>
         )}
@@ -77,14 +78,14 @@ export function SaleActions({ sale, role, layout }: SaleActionsProps) {
     <div className="flex items-center gap-2">
       {canPay && (
         <Button className="flex-1" onClick={() => setDialog("pay")}>
-          <BanknoteIcon />
+          <BanknoteIcon data-icon="inline-start" />
           Cobrar
         </Button>
       )}
       {canEdit && (
         <Button asChild variant="outline" className="flex-1">
           <Link href={`/pos?edit=${sale.id}`}>
-            <PencilIcon />
+            <PencilIcon data-icon="inline-start" />
             Modificar
           </Link>
         </Button>
@@ -96,19 +97,23 @@ export function SaleActions({ sale, role, layout }: SaleActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48 shadow-dropdown">
-          <DropdownMenuItem asChild>
-            <Link href={`/sales/${sale.id}`}>
-              <EyeIcon />
-              Ver detalle
-            </Link>
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link href={`/sales/${sale.id}`}>
+                <EyeIcon />
+                Ver detalle
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
           {canCancel && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onSelect={() => setDialog("cancel")}>
-                <BanIcon />
-                Cancelar venta
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem variant="destructive" onSelect={() => setDialog("cancel")}>
+                  <BanIcon />
+                  Cancelar venta
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </>
           )}
         </DropdownMenuContent>
