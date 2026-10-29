@@ -14,6 +14,16 @@ const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, {
   timeStyle: "short",
 });
 
+const currencyFormatter = new Intl.NumberFormat(LOCALE, {
+  style: "currency",
+  currency: "MXN",
+  currencyDisplay: "narrowSymbol",
+});
+
+export function formatCurrency(amount: number) {
+  return currencyFormatter.format(amount);
+}
+
 export function formatDate(iso: string) {
   return dateFormatter.format(new Date(iso));
 }

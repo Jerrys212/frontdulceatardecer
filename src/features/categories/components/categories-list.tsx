@@ -19,6 +19,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Category, Subcategory } from "@/data/categories/types";
 import { NameDialog } from "@/features/categories/components/name-dialog";
+import { normalizeSearchText } from "@/lib/utils";
 
 type StatusFilter = "all" | "active" | "inactive";
 
@@ -28,12 +29,6 @@ type DialogState =
   | { type: "rename-subcategory"; category: Category; subcategory: Subcategory }
   | null;
 
-function normalize(text: string) {
-  return text
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLocaleLowerCase("es-MX");
-}
 
 function subcategorySummary(subcategories: Subcategory[]) {
   if (subcategories.length === 0) return "Sin subcategorías";
@@ -49,7 +44,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
   const [dialog, setDialog] = useState<DialogState>(null);
   const closeDialog = () => setDialog(null);
 
-  const term = normalize(search.trim());
+  const term = normalizeSearchText(search.trim());
   const visible = useMemo(
     () =>
       categories
@@ -58,10 +53,10 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
           category,
           matchesSubcategory:
             term !== "" &&
-            !normalize(category.name).includes(term) &&
-            category.subcategories.some((subcategory) => normalize(subcategory.name).includes(term)),
+            !normalizeSearchText(category.name).includes(term) &&
+            category.subcategories.some((subcategory) => normalizeSearchText(subcategory.name).includes(term)),
         }))
-        .filter(({ category, matchesSubcategory }) => term === "" || normalize(category.name).includes(term) || matchesSubcategory),
+        .filter(({ category, matchesSubcategory }) => term === "" || normalizeSearchText(category.name).includes(term) || matchesSubcategory),
     [categories, status, term],
   );
 
@@ -172,7 +167,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
                         {category.subcategories.length > 0 && (
                           <ul className="flex flex-col">
                             {category.subcategories.map((subcategory) => {
-                              const highlighted = term !== "" && normalize(subcategory.name).includes(term);
+                              const highlighted = term !== "" && normalizeSearchText(subcategory.name).includes(term);
                               return (
                                 <li
                                   key={subcategory.id}
