@@ -16,16 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { CurrentUser } from "@/data/auth/types";
 import { CHANGE_PASSWORD_PATH, ROLE_LABELS } from "@/lib/auth/routes";
+import { getInitials } from "@/lib/formats";
 
-function getInitials(fullName: string) {
-  const initials = fullName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]?.toUpperCase() ?? "")
-    .join("");
-  return initials || "?";
-}
 
 type UserMenuProps = {
   user: Pick<CurrentUser, "fullName" | "username" | "role">;

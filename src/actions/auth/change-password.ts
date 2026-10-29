@@ -38,5 +38,5 @@ export async function changePassword(input: ChangePasswordInput): Promise<Action
     redirect(`${SIGN_OUT_PATH}?reason=expired`);
   }
 
-  return { success: true, message: message ?? "Contraseña actualizada" };
+  return { success: true, message: message ?? "Contraseña actualizada", data: null };
 }
