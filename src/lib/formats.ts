@@ -32,6 +32,30 @@ export function formatDateTime(iso: string) {
   return dateTimeFormatter.format(new Date(iso));
 }
 
+const timeFormatter = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+export function formatTime(iso: string) {
+  return timeFormatter.format(new Date(iso));
+}
+
+export function elapsedMinutes(fromIso: string, now: number) {
+  return Math.max(0, Math.floor((now - new Date(fromIso).getTime()) / 60_000));
+}
+
+export function formatElapsed(fromIso: string, now: number) {
+  const minutes = elapsedMinutes(fromIso, now);
+  if (minutes < 1) return "hace un momento";
+  if (minutes < 60) return `hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest === 0 ? `hace ${hours} h` : `hace ${hours} h ${rest} min`;
+}
+
 export function getInitials(fullName: string) {
   const initials = fullName
     .split(/\s+/)
