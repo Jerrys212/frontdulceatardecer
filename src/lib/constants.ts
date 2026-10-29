@@ -1,4 +1,4 @@
-import { LayoutGridIcon, StoreIcon, UsersIcon, type LucideIcon } from "lucide-react";
+import { ChefHatIcon, LayoutGridIcon, ShoppingCartIcon, StoreIcon, UsersIcon, type LucideIcon } from "lucide-react";
 
 import type { Role } from "@/data/auth/types";
 
@@ -21,6 +21,13 @@ export type NavGroup = {
 export const NAV_GROUPS: NavGroup[] = [
   {
     items: [{ title: "Inicio", href: "/", icon: LayoutGridIcon, roles: ["Admin", "Cashier", "Kitchen"] }],
+  },
+  {
+    title: "Operación",
+    items: [
+      { title: "Punto de venta", href: "/pos", icon: ShoppingCartIcon, roles: ["Admin", "Cashier"] },
+      { title: "Pendientes", href: "/sales/pending", icon: ChefHatIcon, roles: ["Admin", "Cashier", "Kitchen"] },
+    ],
   },
   {
     title: "Administración",
