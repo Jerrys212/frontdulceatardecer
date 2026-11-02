@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/forms/date-picker";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -27,27 +27,25 @@ export function SalesFilters({ today, sellers }: { today: string; sellers: Selle
           <Label htmlFor="sales-from" className="text-xs text-muted-foreground">
             Desde
           </Label>
-          <Input
+          <DatePicker
             id="sales-from"
-            type="date"
             value={from}
             max={to}
-            onChange={(event) => setParams({ from: event.target.value || null })}
-            className="h-9 bg-card"
+            onChange={(date) => setParams({ from: date })}
+            className="bg-card"
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="sales-to" className="text-xs text-muted-foreground">
             Hasta
           </Label>
-          <Input
+          <DatePicker
             id="sales-to"
-            type="date"
             value={to}
             min={from}
             max={today}
-            onChange={(event) => setParams({ to: event.target.value || null })}
-            className="h-9 bg-card"
+            onChange={(date) => setParams({ to: date })}
+            className="bg-card"
           />
         </div>
       </div>
