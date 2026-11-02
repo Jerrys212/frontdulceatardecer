@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ChevronRightIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { cn } from "cn";
 
@@ -15,11 +15,13 @@ import { ActiveSwitch } from "@/components/active-switch";
 import { EmptyState } from "@/components/empty-state";
 import { SearchInput } from "@/components/forms/search-input";
 import { StatusSelect } from "@/components/forms/status-select";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Category, Subcategory } from "@/data/categories/types";
 import { NameDialog } from "@/features/categories/components/name-dialog";
+import { paginate } from "@/lib/pagination";
 import { normalizeSearchText } from "@/lib/utils";
 import { matchesStatus, type StatusFilter } from "@/lib/validations/status";
 
@@ -29,17 +31,18 @@ type DialogState =
   | { type: "rename-subcategory"; category: Category; subcategory: Subcategory }
   | null;
 
+const DEACTIVATE_DESCRIPTION =
+  "Sus productos dejarán de aparecer en el punto de venta. Puedes activarla de nuevo cuando quieras.";
 
-function subcategorySummary(subcategories: Subcategory[]) {
-  if (subcategories.length === 0) return "Sin subcategorías";
+function subcategoryCount(subcategories: Subcategory[]) {
   const inactive = subcategories.filter((subcategory) => !subcategory.isActive).length;
-  const total = `${subcategories.length} ${subcategories.length === 1 ? "subcategoría" : "subcategorías"}`;
-  return inactive > 0 ? `${total} · ${inactive} ${inactive === 1 ? "inactiva" : "inactivas"}` : total;
+  return inactive > 0 ? `${subcategories.length} (${inactive} ${inactive === 1 ? "inactiva" : "inactivas"})` : `${subcategories.length}`;
 }
 
 export function CategoriesList({ categories }: { categories: Category[] }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<StatusFilter>("all");
+  const [page, setPage] = useState(1);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<DialogState>(null);
   const closeDialog = () => setDialog(null);
@@ -56,13 +59,17 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
             !normalizeSearchText(category.name).includes(term) &&
             category.subcategories.some((subcategory) => normalizeSearchText(subcategory.name).includes(term)),
         }))
-        .filter(({ category, matchesSubcategory }) => term === "" || normalizeSearchText(category.name).includes(term) || matchesSubcategory),
+        .filter(
+          ({ category, matchesSubcategory }) =>
+            term === "" || normalizeSearchText(category.name).includes(term) || matchesSubcategory,
+        ),
     [categories, status, term],
   );
+  const current = paginate(visible, page);
 
-  function toggleExpanded(id: string, open: boolean) {
-    setExpanded((current) => {
-      const next = new Set(current);
+  function setCategoryExpanded(id: string, open: boolean) {
+    setExpanded((previous) => {
+      const next = new Set(previous);
       if (open) next.add(id);
       else next.delete(id);
       return next;
@@ -75,10 +82,20 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
         <SearchInput
           value={search}
           label="Buscar categoría o subcategoría"
-          onChange={setSearch}
+          onChange={(value) => {
+            setSearch(value);
+            setPage(1);
+          }}
           className="h-9 bg-card sm:flex-1"
         />
-        <StatusSelect value={status} onChange={setStatus} feminine />
+        <StatusSelect
+          value={status}
+          onChange={(value) => {
+            setStatus(value);
+            setPage(1);
+          }}
+          feminine
+        />
       </search>
 
       <section aria-label="Categorías" className="overflow-hidden rounded-md border border-border-translucent bg-card">
@@ -92,121 +109,146 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
             }
           />
         ) : (
-          <ul className="divide-y divide-border">
-            {visible.map(({ category, matchesSubcategory }) => {
-              const open = expanded.has(category.id) || matchesSubcategory;
-              return (
-                <li key={category.id}>
-                  <Collapsible open={open} onOpenChange={(next) => toggleExpanded(category.id, next)}>
-                    <div className={cn("flex items-center gap-3 px-4 py-3", !category.isActive && "text-muted-foreground")}>
-                      <CollapsibleTrigger asChild>
+          <Table className="sm:table-fixed">
+            <TableHeader className="bg-muted/60">
+              <TableRow>
+                <TableHead className="pl-4 sm:w-1/2">Nombre</TableHead>
+                <TableHead className="text-center">Subcategorías</TableHead>
+                <TableHead className="text-center">Estado</TableHead>
+                <TableHead className="pr-4">
+                  <span className="sr-only">Acciones</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {current.items.map(({ category, matchesSubcategory }) => {
+                const open = expanded.has(category.id) || matchesSubcategory;
+                return (
+                  <Fragment key={category.id}>
+                    <TableRow className={cn(!category.isActive && "text-muted-foreground")}>
+                      <TableCell className="pl-2 font-medium">
                         <button
                           type="button"
-                          className="group flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                          aria-expanded={open}
+                          aria-label={`${open ? "Ocultar" : "Mostrar"} subcategorías de ${category.name}`}
+                          onClick={() => setCategoryExpanded(category.id, !open)}
+                          className="group flex w-full items-center gap-2 rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                         >
                           <ChevronRightIcon
-                            className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90"
+                            className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
                             aria-hidden="true"
                           />
-                          <span className="flex min-w-0 flex-col">
-                            <span className="flex flex-wrap items-center gap-2 font-medium">
-                              {category.name}
-                              {!category.isActive && (
-                                <Badge variant="outline">
-                                  Inactiva
-                                </Badge>
-                              )}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {subcategorySummary(category.subcategories)}
-                            </span>
+                          <span className="flex flex-wrap items-center gap-2">
+                            {category.name}
+                            {!category.isActive && <Badge variant="outline">Inactiva</Badge>}
                           </span>
                         </button>
-                      </CollapsibleTrigger>
-                      <ActiveSwitch
-                        checked={category.isActive}
-                        label={`${category.isActive ? "Desactivar" : "Activar"} ${category.name}`}
-                        deactivateTitle={`¿Desactivar ${category.name}?`}
-                        deactivateDescription="Sus productos dejarán de aparecer en el punto de venta. Puedes activarla de nuevo cuando quieras."
-                        onToggle={(active) => setCategoryActive(category.id, active)}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        aria-label={`Editar ${category.name}`}
-                        onClick={() => setDialog({ type: "rename-category", category })}
-                      >
-                        <PencilIcon data-icon="inline-start" />
-                        <span className="hidden sm:inline">Editar</span>
-                      </Button>
-                    </div>
-                    <CollapsibleContent>
-                      <div className="border-t border-border bg-background/60 px-4 py-3 pl-11">
-                        {!category.isActive && (
-                          <p className="mb-2 text-xs text-muted-foreground">
-                            La categoría está inactiva: ninguna de sus subcategorías aparece en el punto de venta.
-                          </p>
-                        )}
-                        {category.subcategories.length > 0 && (
-                          <ul className="flex flex-col">
-                            {category.subcategories.map((subcategory) => {
-                              const highlighted = term !== "" && normalizeSearchText(subcategory.name).includes(term);
-                              return (
-                                <li
-                                  key={subcategory.id}
-                                  className={cn(
-                                    "flex items-center gap-3 rounded-md px-2 py-1.5",
-                                    highlighted && "bg-primary/10",
-                                    !subcategory.isActive && "text-muted-foreground",
-                                  )}
-                                >
-                                  <span className="flex min-w-0 flex-1 items-center gap-2 text-sm">
-                                    <span className="truncate">{subcategory.name}</span>
-                                    {!subcategory.isActive && (
-                                      <Badge variant="outline">
-                                        Inactiva
-                                      </Badge>
-                                    )}
-                                  </span>
-                                  <ActiveSwitch
-                                    checked={subcategory.isActive}
-                                    label={`${subcategory.isActive ? "Desactivar" : "Activar"} ${subcategory.name}`}
-                                    deactivateTitle={`¿Desactivar ${subcategory.name}?`}
-                                    deactivateDescription="Sus productos dejarán de aparecer en el punto de venta. Puedes activarla de nuevo cuando quieras."
-                                    onToggle={(active) => setSubcategoryActive(category.id, subcategory.id, active)}
-                                  />
-                                  <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    className="text-muted-foreground"
-                                    aria-label={`Editar ${subcategory.name}`}
-                                    onClick={() => setDialog({ type: "rename-subcategory", category, subcategory })}
-                                  >
-                                    <PencilIcon />
-                                  </Button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
+                      </TableCell>
+                      <TableCell className="text-center tabular-nums">{subcategoryCount(category.subcategories)}</TableCell>
+                      <TableCell className="text-center">
+                        <ActiveSwitch
+                          checked={category.isActive}
+                          label={`${category.isActive ? "Desactivar" : "Activar"} ${category.name}`}
+                          deactivateTitle={`¿Desactivar ${category.name}?`}
+                          deactivateDescription={DEACTIVATE_DESCRIPTION}
+                          onToggle={(active) => setCategoryActive(category.id, active)}
+                        />
+                      </TableCell>
+                      <TableCell className="pr-4 text-center">
                         <Button
-                          variant="link"
+                          variant="outline"
                           size="sm"
-                          className="mt-1 px-2"
-                          onClick={() => setDialog({ type: "add-subcategory", category })}
+                          aria-label={`Editar ${category.name}`}
+                          onClick={() => setDialog({ type: "rename-category", category })}
                         >
-                          <PlusIcon data-icon="inline-start" />
-                          Agregar subcategoría
+                          <PencilIcon data-icon="inline-start" />
+                          <span className="hidden sm:inline">Editar</span>
                         </Button>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </li>
-              );
-            })}
-          </ul>
+                      </TableCell>
+                    </TableRow>
+
+                    {open &&
+                      category.subcategories.map((subcategory) => {
+                        const highlighted = term !== "" && normalizeSearchText(subcategory.name).includes(term);
+                        return (
+                          <TableRow
+                            key={subcategory.id}
+                            className={cn(
+                              "bg-background/60",
+                              highlighted && "bg-primary/10",
+                              !subcategory.isActive && "text-muted-foreground",
+                            )}
+                          >
+                            <TableCell className="pl-12">
+                              <span className="flex flex-wrap items-center gap-2 text-sm">
+                                {subcategory.name}
+                                {!subcategory.isActive && <Badge variant="outline">Inactiva</Badge>}
+                              </span>
+                            </TableCell>
+                            <TableCell />
+                            <TableCell className="text-center">
+                              <ActiveSwitch
+                                checked={subcategory.isActive}
+                                label={`${subcategory.isActive ? "Desactivar" : "Activar"} ${subcategory.name}`}
+                                deactivateTitle={`¿Desactivar ${subcategory.name}?`}
+                                deactivateDescription={DEACTIVATE_DESCRIPTION}
+                                onToggle={(active) => setSubcategoryActive(category.id, subcategory.id, active)}
+                              />
+                            </TableCell>
+                            <TableCell className="pr-4 text-center">
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-muted-foreground"
+                                aria-label={`Editar ${subcategory.name}`}
+                                onClick={() => setDialog({ type: "rename-subcategory", category, subcategory })}
+                              >
+                                <PencilIcon />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+
+                    {open && (
+                      <TableRow className="bg-background/60 hover:bg-background/60">
+                        <TableCell colSpan={4} className="pl-10 whitespace-normal">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="px-2"
+                              onClick={() => setDialog({ type: "add-subcategory", category })}
+                            >
+                              <PlusIcon data-icon="inline-start" />
+                              Agregar subcategoría
+                            </Button>
+                            {!category.isActive && (
+                              <p className="text-xs text-muted-foreground">
+                                La categoría está inactiva: ninguna de sus subcategorías aparece en el punto de venta.
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </TableBody>
+          </Table>
         )}
       </section>
+      {current.totalCount > 0 && (
+        <PaginationBar
+          page={current.page}
+          pageSize={current.pageSize}
+          itemCount={current.items.length}
+          totalCount={current.totalCount}
+          totalPages={current.totalPages}
+          onPageChange={setPage}
+        />
+      )}
 
       {dialog?.type === "rename-category" && (
         <NameDialog
@@ -230,7 +272,7 @@ export function CategoriesList({ categories }: { categories: Category[] }) {
           pendingLabel="Agregando…"
           onSubmit={(input) => createSubcategory(dialog.category.id, input)}
           onClose={() => {
-            toggleExpanded(dialog.category.id, true);
+            setCategoryExpanded(dialog.category.id, true);
             closeDialog();
           }}
         />
