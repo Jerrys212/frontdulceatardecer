@@ -48,7 +48,7 @@ export function SaleActions({ sale, role, layout }: SaleActionsProps) {
   if (layout === "detail") {
     if (!canPay && !canEdit && !canCancel) return null;
     return (
-      <div className="flex flex-col gap-2">
+      <div className="mt-auto flex flex-col gap-2">
         {canPay && (
           <Button size="lg" onClick={() => setDialog("pay")}>
             <BanknoteIcon data-icon="inline-start" />

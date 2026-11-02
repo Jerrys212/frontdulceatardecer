@@ -78,8 +78,8 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
         </p>
       </header>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <section aria-labelledby="sale-products" className="overflow-hidden rounded-md border border-border-translucent bg-card">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <section aria-labelledby="sale-products" className="flex flex-col overflow-hidden rounded-md border border-border-translucent bg-card">
           <h2 id="sale-products" className="border-b border-border px-4 py-3 font-semibold">
             Productos
           </h2>
@@ -139,7 +139,7 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
               </TableRow>
             </TableFooter>
           </Table>
-          <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+          <p className="mt-auto border-t border-border px-4 py-3 text-xs text-muted-foreground">
             Los nombres y precios se muestran como estaban al registrar la venta.
           </p>
         </section>
