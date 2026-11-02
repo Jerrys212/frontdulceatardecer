@@ -72,9 +72,9 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-lexend);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-heading: var(--font-lexend);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

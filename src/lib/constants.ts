@@ -1,4 +1,5 @@
 import {
+  ChartColumnIcon,
   ChefHatIcon,
   LayoutGridIcon,
   ReceiptTextIcon,
@@ -51,6 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
           { title: "Extras", href: "/catalog/extras" },
         ],
       },
+      { title: "Reportes", href: "/reports", icon: ChartColumnIcon, roles: ["Admin"] },
       { title: "Usuarios", href: "/users", icon: UsersIcon, roles: ["Admin"] },
     ],
   },
