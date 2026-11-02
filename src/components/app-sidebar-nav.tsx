@@ -19,21 +19,30 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import type { Role } from "@/data/auth/types";
-import { getNavigation, type NavItem } from "@/lib/constants";
+import { getNavigation, type NavGroup, type NavItem } from "@/lib/constants";
 
 const MENU_ITEM_CLASS =
   "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground-active data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground-active";
 const MENU_BUTTON_CLASS = cn("h-10", MENU_ITEM_CLASS);
 
-function isActivePath(pathname: string, href: string) {
+function matchesPath(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: string; onNavigate: () => void }) {
+function findActiveHref(groups: NavGroup[], pathname: string) {
+  const hrefs = groups.flatMap((group) =>
+    group.items.flatMap((item) => (item.children ? item.children.map((child) => child.href) : [item.href])),
+  );
+  return hrefs
+    .filter((href) => matchesPath(pathname, href))
+    .reduce<string | null>((longest, href) => (longest && longest.length >= href.length ? longest : href), null);
+}
+
+function NavEntry({ item, activeHref, onNavigate }: { item: NavItem; activeHref: string | null; onNavigate: () => void }) {
   const Icon = item.icon;
 
   if (item.children) {
-    const groupActive = item.children.some((child) => isActivePath(pathname, child.href));
+    const groupActive = item.children.some((child) => child.href === activeHref);
     return (
       <Collapsible asChild defaultOpen={groupActive} className="group/collapsible">
         <SidebarMenuItem className="rounded-md data-[state=open]:bg-sidebar-group-open">
@@ -47,7 +56,7 @@ function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: str
           <CollapsibleContent>
             <SidebarMenuSub className="border-sidebar-border">
               {item.children.map((child) => {
-                const active = isActivePath(pathname, child.href);
+                const active = child.href === activeHref;
                 return (
                   <SidebarMenuSubItem key={child.href}>
                     <SidebarMenuSubButton
@@ -69,7 +78,7 @@ function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: str
     );
   }
 
-  const active = isActivePath(pathname, item.href);
+  const active = item.href === activeHref;
   return (
     <SidebarMenuItem>
       <SidebarMenuButton asChild isActive={active} tooltip={item.title} className={MENU_BUTTON_CLASS}>
@@ -84,6 +93,8 @@ function NavEntry({ item, pathname, onNavigate }: { item: NavItem; pathname: str
 
 export function AppSidebarNav({ role }: { role: Role }) {
   const pathname = usePathname();
+  const navigation = getNavigation(role);
+  const activeHref = findActiveHref(navigation, pathname);
   const { isMobile, setOpenMobile } = useSidebar();
   const closeOnMobile = () => {
     if (isMobile) setOpenMobile(false);
@@ -91,7 +102,7 @@ export function AppSidebarNav({ role }: { role: Role }) {
 
   return (
     <nav aria-label="Navegación principal">
-      {getNavigation(role).map((group, index) => (
+      {navigation.map((group, index) => (
         <SidebarGroup key={group.title ?? index}>
           {group.title && (
             <SidebarGroupLabel className="text-xs font-semibold tracking-wider text-sidebar-title uppercase">
@@ -101,7 +112,7 @@ export function AppSidebarNav({ role }: { role: Role }) {
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((item) => (
-                <NavEntry key={item.title} item={item} pathname={pathname} onNavigate={closeOnMobile} />
+                <NavEntry key={item.title} item={item} activeHref={activeHref} onNavigate={closeOnMobile} />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
