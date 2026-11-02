@@ -65,3 +65,14 @@ export function getInitials(fullName: string) {
     .join("");
   return initials || "?";
 }
+
+const isoDateFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+export function todayIsoDate() {
+  return isoDateFormatter.format(new Date());
+}

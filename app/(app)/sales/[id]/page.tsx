@@ -61,8 +61,16 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
 
   const sale = await getSale(id.data);
 
+  const back = user.role === "Admin" ? { href: "/sales", label: "Ventas" } : { href: "/sales/pending", label: "Pendientes" };
+
   return (
     <>
+      <Button asChild variant="ghost" size="sm" className="self-start text-muted-foreground">
+        <Link href={back.href}>
+          <ArrowLeftIcon data-icon="inline-start" />
+          {back.label}
+        </Link>
+      </Button>
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tabular-nums">Venta {saleNumber(sale.id)}</h1>
         <p className="text-sm text-muted-foreground">
@@ -185,6 +193,7 @@ async function SaleDetail({ params }: { params: PageProps<"/sales/[id]">["params
 function SaleDetailSkeleton() {
   return (
     <div className="flex flex-col gap-6" aria-busy="true" aria-label="Cargando venta">
+      <Skeleton className="h-8 w-28" />
       <Skeleton className="h-8 w-56" />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <Skeleton className="h-72" />
@@ -197,12 +206,6 @@ function SaleDetailSkeleton() {
 export default function SaleDetailPage({ params }: PageProps<"/sales/[id]">) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Button asChild variant="ghost" size="sm" className="self-start text-muted-foreground">
-        <Link href="/sales/pending">
-          <ArrowLeftIcon data-icon="inline-start" />
-          Pendientes
-        </Link>
-      </Button>
       <Suspense fallback={<SaleDetailSkeleton />}>
         <SaleDetail params={params} />
       </Suspense>

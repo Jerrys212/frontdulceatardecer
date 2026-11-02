@@ -58,3 +58,15 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
 export function saleNumber(id: string) {
   return `#${id.replace(/-/g, "").slice(-6).toUpperCase()}`;
 }
+
+export const SALES_PAGE_SIZE = 20;
+
+export const SalesQuerySchema = z.object({
+  from: z.iso.date().optional().catch(undefined),
+  to: z.iso.date().optional().catch(undefined),
+  status: SaleStatusSchema.optional().catch(undefined),
+  paymentMethod: PaymentMethodSchema.optional().catch(undefined),
+  cashierId: z.string().trim().min(1).max(450).optional().catch(undefined),
+  page: z.coerce.number().int().min(1).optional().catch(undefined),
+});
+export type SalesQuery = z.infer<typeof SalesQuerySchema>;

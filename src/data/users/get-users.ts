@@ -19,3 +19,10 @@ export async function getUsers({ search, role, status, page }: UsersQuery) {
   const { data } = await apiFetch(path, UsersPageSchema);
   return data;
 }
+
+const MAX_USERS_PAGE_SIZE = 50;
+
+export async function getSellers() {
+  const { data } = await apiFetch(withQuery("/users", { pageSize: MAX_USERS_PAGE_SIZE }), UsersPageSchema);
+  return data.items.filter((user) => user.role !== "Kitchen");
+}
