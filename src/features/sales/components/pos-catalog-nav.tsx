@@ -37,7 +37,11 @@ export function PosCatalogNav({ categories, categoryId, subcategoryId }: PosCata
         aria-label="Catálogo"
         className="sticky top-16 z-20 -mx-4 -mt-2 flex flex-col gap-2 bg-background px-4 pb-2 md:-mx-6 md:px-6"
       >
-        <div className="flex gap-1 overflow-x-auto border-b border-border" role="group" aria-label="Categorías">
+        <div
+          className="flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_var(--color-border)]"
+          role="group"
+          aria-label="Categorías"
+        >
           {categories.map((category) => {
             const active = !searching && category.id === categoryId;
             return (
@@ -47,7 +51,7 @@ export function PosCatalogNav({ categories, categoryId, subcategoryId }: PosCata
                 aria-pressed={active}
                 onClick={() => selectCatalog({ category: category.id, subcategory: null })}
                 className={cn(
-                  "-mb-px h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                  "h-11 shrink-0 border-b-2 px-4 text-sm font-semibold transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                   active
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground",
