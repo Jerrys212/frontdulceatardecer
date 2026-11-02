@@ -76,3 +76,31 @@ const isoDateFormatter = new Intl.DateTimeFormat("en-CA", {
 export function todayIsoDate() {
   return isoDateFormatter.format(new Date());
 }
+
+const numberFormatter = new Intl.NumberFormat(LOCALE);
+
+export function formatNumber(value: number) {
+  return numberFormatter.format(value);
+}
+
+const percentFormatter = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+
+export function formatPercent(value: number) {
+  return `${percentFormatter.format(value)} %`;
+}
+
+const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+export function formatIsoDate(isoDate: string) {
+  const [year, month, day] = isoDate.slice(0, 10).split("-").map(Number);
+  return `${day} ${MONTHS[(month ?? 1) - 1]} ${year}`;
+}
+
+export function formatIntervalLabel(start: string, grouping: "hour" | "day" | "week" | "month") {
+  const [year, month, day] = start.slice(0, 10).split("-").map(Number);
+  const monthLabel = MONTHS[(month ?? 1) - 1];
+  if (grouping === "hour") return `${start.slice(11, 13)}:00`;
+  if (grouping === "month") return `${monthLabel} ${year}`;
+  if (grouping === "week") return `Sem. ${day} ${monthLabel}`;
+  return `${day} ${monthLabel}`;
+}
