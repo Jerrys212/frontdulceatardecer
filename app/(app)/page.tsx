@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCurrentUser } from "@/data/auth/get-current-user";
+import { getMyDay } from "@/data/reports/get-reports";
+import { MyDaySummary } from "@/features/reports/components/my-day-summary";
 import { ROLE_LABELS } from "@/lib/auth/routes";
 
 export const metadata: Metadata = {
@@ -20,18 +22,21 @@ async function Welcome() {
   );
 }
 
+async function MyDay() {
+  const user = await getCurrentUser();
+  if (user.role === "Kitchen") return null;
+  return <MyDaySummary myDay={await getMyDay()} />;
+}
+
 export default function HomePage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
       <Suspense fallback={<Skeleton className="h-14 w-72" />}>
         <Welcome />
       </Suspense>
-      <section
-        aria-label="Próximamente"
-        className="rounded-md border border-border-translucent bg-card p-6 text-sm text-muted-foreground"
-      >
-        Aquí aparecerán los módulos de tu rol (punto de venta, pendientes, catálogo, usuarios y reportes).
-      </section>
+      <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+        <MyDay />
+      </Suspense>
     </div>
   );
 }
