@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/forms/date-picker";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { ReportPeriod } from "@/data/reports/types";
@@ -44,31 +44,25 @@ export function PeriodFilter({ period, today }: { period: ReportPeriod; today: s
           <Label htmlFor="report-from" className="text-xs text-muted-foreground">
             Desde
           </Label>
-          <Input
+          <DatePicker
             id="report-from"
-            type="date"
             value={period.from}
             max={period.to}
-            onChange={(event) => {
-              if (event.target.value) applyPeriod({ from: event.target.value, to: period.to });
-            }}
-            className="h-9 bg-card"
+            onChange={(date) => applyPeriod({ from: date, to: period.to })}
+            className="bg-card"
           />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="report-to" className="text-xs text-muted-foreground">
             Hasta
           </Label>
-          <Input
+          <DatePicker
             id="report-to"
-            type="date"
             value={period.to}
             min={period.from}
             max={today}
-            onChange={(event) => {
-              if (event.target.value) applyPeriod({ from: period.from, to: event.target.value });
-            }}
-            className="h-9 bg-card"
+            onChange={(date) => applyPeriod({ from: period.from, to: date })}
+            className="bg-card"
           />
         </div>
       </div>
