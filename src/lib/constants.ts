@@ -1,4 +1,12 @@
-import { ChefHatIcon, LayoutGridIcon, ShoppingCartIcon, StoreIcon, UsersIcon, type LucideIcon } from "lucide-react";
+import {
+  ChefHatIcon,
+  LayoutGridIcon,
+  ReceiptTextIcon,
+  ShoppingCartIcon,
+  StoreIcon,
+  UsersIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 import type { Role } from "@/data/auth/types";
 
@@ -27,6 +35,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Punto de venta", href: "/pos", icon: ShoppingCartIcon, roles: ["Admin", "Cashier"] },
       { title: "Pendientes", href: "/sales/pending", icon: ChefHatIcon, roles: ["Admin", "Cashier", "Kitchen"] },
+      { title: "Ventas", href: "/sales", icon: ReceiptTextIcon, roles: ["Admin"] },
     ],
   },
   {
